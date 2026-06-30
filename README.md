@@ -30,6 +30,9 @@ Pre-commit is configured to use the following tools for checking and formatting 
 
 ### Changelog
 
+### 0.1.1 — 2026-06-30
+- Add missing `Stock Entry.custom_inward_inspection_required` custom field to fixtures. The SO→Material Receipt mapping in `sales_order.py` sets this field, but the migration dropped its definition — on a fresh site the write had no backing field. Found by rehearsing the globcom decommission against a production-clone DB.
+
 ### 0.1.0 — 2026-06-30
 - Migrate all `globcom_manufacturing` development into this app, reorganized into two modules: ITAG Manufacturing + ITAG Quality.
 - ITAG Manufacturing: serial/heat traceability, CPI GRN rollup, Work Order FIFO serial allocation, Job Card serial gate, Production Settings (Single).
