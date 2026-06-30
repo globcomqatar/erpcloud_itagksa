@@ -247,3 +247,61 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+# ITAG customization
+# ==================
+# Migrated from globcom_manufacturing. Two modules: ITAG Manufacturing + ITAG Quality.
+
+doc_events = {
+	"Stock Entry": {
+		"validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.validate",
+		"on_submit": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
+		"on_cancel": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",
+	},
+	"BOM": {
+		"before_save": "erpcloud_itagksa.itag_quality.acceptance_criteria.acceptance_criteria.propagate_bom_from_routing",
+	},
+	"Work Order": {
+		"validate": [
+			"erpcloud_itagksa.itag_manufacturing.work_order.work_order.validate",
+			"erpcloud_itagksa.itag_quality.acceptance_criteria.acceptance_criteria.propagate_wo_from_bom",
+		],
+		"after_insert": "erpcloud_itagksa.itag_manufacturing.work_order.work_order.after_insert",
+	},
+	"Job Card": {
+		"validate": "erpcloud_itagksa.itag_manufacturing.job_card.job_card.validate",
+		"before_save": "erpcloud_itagksa.itag_manufacturing.job_card.job_card.before_save",
+		"on_submit": "erpcloud_itagksa.itag_manufacturing.job_card.job_card.on_submit",
+		"on_update": "erpcloud_itagksa.itag_manufacturing.job_card.job_card.on_update",
+		"on_cancel": "erpcloud_itagksa.itag_manufacturing.job_card.job_card.on_cancel",
+	},
+	"Quality Inspection": {
+		"on_submit": "erpcloud_itagksa.itag_quality.quality_inspection.quality_inspection.on_submit",
+	},
+	"Material Request": {
+		"before_save": "erpcloud_itagksa.itag_quality.material_request.material_request.before_save",
+	},
+}
+
+doctype_js = {
+	"Sales Order": "itag_manufacturing/sales_order/sales_order.js",
+	"Stock Entry": "itag_manufacturing/stock_entry/stock_entry.js",
+	"Job Card": "itag_manufacturing/job_card/job_card.js",
+	"Work Order": "itag_manufacturing/work_order/work_order.js",
+}
+
+fixtures = [
+	{
+		"dt": "Custom Field",
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality"]]],
+	},
+	{
+		"dt": "Property Setter",
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality"]]],
+	},
+	{
+		"dt": "Stock Entry Type",
+		"filters": [["name", "in", ["Material Receipt - CPI", "Material Return - CPI"]]],
+	},
+]
+

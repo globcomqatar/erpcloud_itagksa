@@ -1,0 +1,26 @@
+app: erpcloud_itagksa
+description: Unified ITAG KSA customization app. Capability-based modules.
+modules:
+  - id: itag_manufacturing
+    label: ITAG Manufacturing
+    description: Subcontracted manufacturing flow + serial/heat traceability.
+  - id: itag_quality
+    label: ITAG Quality
+    description: Quality inspection gating + acceptance criteria propagation.
+
+features:
+  - fid: f001
+    slug: itag-manufacturing-subcontract-traceability
+    module: itag_manufacturing
+    title: Subcontract Manufacturing + Serial/Heat Traceability
+    status: done
+    origin: globcom_manufacturing
+    components: 7
+  - fid: f002
+    slug: itag-quality-inspection-gating
+    module: itag_quality
+    title: Quality Inspection Gating + Acceptance Criteria
+    status: done
+    origin: globcom_manufacturing
+    depends_on: [f001]
+    components: 5

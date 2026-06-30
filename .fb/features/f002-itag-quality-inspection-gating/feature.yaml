@@ -1,0 +1,74 @@
+fid: f002
+slug: itag-quality-inspection-gating
+module: itag_quality
+title: Quality Inspection Gating + Acceptance Criteria
+origin: globcom_manufacturing
+depends_on: [f001]
+description: >
+  Quality layer over the manufacturing flow. Acceptance criteria propagate
+  Routing -> BOM -> Work Order -> Job Card. Job Card submission is gated on a
+  submitted+Accepted Quality Inspection; QI submission auto-submits its Job
+  Card. Split out of globcom_manufacturing into its own module per ITAG
+  organization. QI <-> Job Card is bidirectionally coupled — clean module/file
+  split, not a code severance; the seam is f002-c004 called from f001-c003.
+
+status_history: open --> done
+created: 2026-06-30
+migrated: 2026-06-30
+
+components:
+  - id: f002-c001
+    name: Quality Inspection controller
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/quality_inspection/quality_inspection.py
+    responsibility: >
+      on_submit auto_submit_job_card (lenient — warns, does not block QI).
+      validate_job_card_ready_to_submit (WO not Stopped, time logs, qty checks).
+
+  - id: f002-c002
+    name: Acceptance Criteria propagation
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/acceptance_criteria/acceptance_criteria.py
+    responsibility: >
+      propagate_bom_from_routing (BOM.before_save), propagate_wo_from_bom
+      (Work Order.validate), propagate_job_card_from_wo (Job Card.before_save).
+      Fires on manufacturing doctypes; logic owned by quality module.
+
+  - id: f002-c003
+    name: Material Request quality flag
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/material_request/material_request.py
+    responsibility: >
+      before_save sets custom_quality_verification_required when any item
+      custom_product_type in {Critical, Non-Critical}.
+
+  - id: f002-c004
+    name: Job Card inspection gate (seam)
+    type: util
+    stage: done
+    status_history: open --> done
+    source: extracted from globcom_manufacturing_custom/job_card/job_card.py on_submit
+    responsibility: >
+      Inspection-required check — Job Card.on_submit requires linked QI
+      submitted (docstatus=1) and status=Accepted when custom_inspection_required.
+      Lives in itag_quality; called from itag_manufacturing Job Card handler
+      (f001-c003). The cross-module seam — single import, no duplication.
+
+  - id: f002-c005
+    name: Quality fixtures
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing/fixtures/custom_field.json (quality subset)
+    responsibility: >
+      Custom Fields (module=ITAG Quality): BOM Operation custom_acceptance_criteria;
+      Work Order Operation custom_acceptance_criteria + custom_quality_inspection_required;
+      Job Card custom_inspection_required + custom_acceptance_criteria;
+      Material Request custom_quality_verification_required;
+      Material Request Item custom_product_type.

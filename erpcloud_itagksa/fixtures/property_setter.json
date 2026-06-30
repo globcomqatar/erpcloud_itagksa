@@ -1,0 +1,18 @@
+[
+ {
+  "default_value": null,
+  "doc_type": "Stock Entry",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "inspection_required",
+  "is_system_generated": 0,
+  "modified": "2026-02-08 14:23:09.111075",
+  "module": "ITAG Manufacturing",
+  "name": "Stock Entry-inspection_required-hidden",
+  "property": "hidden",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "1"
+ }
+]

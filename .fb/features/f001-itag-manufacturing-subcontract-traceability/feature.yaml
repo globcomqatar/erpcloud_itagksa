@@ -1,0 +1,94 @@
+fid: f001
+slug: itag-manufacturing-subcontract-traceability
+module: itag_manufacturing
+title: Subcontract Manufacturing + Serial/Heat Traceability
+origin: globcom_manufacturing
+description: >
+  Subcontracted manufacturing flow with end-to-end serial + heat-number
+  traceability. Customer property received via CPI Stock Entry, allocated FIFO
+  to Work Orders, carried through Job Cards, and rolled back to Sales Order GRN
+  status. Migrated as-is from globcom_manufacturing.
+
+status_history: open --> done
+created: 2026-06-30
+migrated: 2026-06-30
+
+components:
+  - id: f001-c001
+    name: Stock Entry controller
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/stock_entry/stock_entry.py
+    responsibility: >
+      doc_events validate/on_submit/on_cancel. SO GRN status rollup
+      (Not/Partially/Fully Received) across non-cancelled receipt SEs.
+      populate_serial_attributes_from_work_order, update_serial_no_master_on_receipt.
+
+  - id: f001-c002
+    name: Work Order controller
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/work_order/work_order.py
+    depends_on: [f001-c005]
+    responsibility: >
+      validate (subcontract GRN guard via Sales Order, mirror serial/heat from
+      custom_stock_entry SE Detail rows) + after_insert FIFO serial allocation.
+
+  - id: f001-c003
+    name: Job Card controller
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/job_card/job_card.py
+    depends_on: [f001-c005, f002-c004]
+    responsibility: >
+      Serial-required-for-timelog gate, fetch serial attrs, mark WO
+      custom_job_cards_completed when all JCs done, whitelisted
+      persist_auto_selected_serial. on_submit inspection gate DELEGATES to
+      itag_quality (f002-c004) — the cross-module seam.
+
+  - id: f001-c004
+    name: Sales Order controller
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/sales_order/sales_order.py
+    responsibility: >
+      create_material_receipt_from_sales_order (mapped doc, JS button) and
+      validate_subcontract_grn_exists guard.
+
+  - id: f001-c005
+    name: Serial traceability utils
+    type: util
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/utils/
+    responsibility: >
+      serial_field_utils.py (populate/clear/get serial fields),
+      serial_no_validation.py (1:1 count + attr-match + master update),
+      work_order_serial_fetching.py (FIFO allocation across Stock Entries).
+
+  - id: f001-c006
+    name: Client scripts
+    type: client
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing_custom/{sales_order,stock_entry,work_order,job_card}/*.js
+    responsibility: >
+      SO Create-GRN button, Stock Entry CPI auto-type + serial fetch +
+      Create-SO button, Work Order serial population + notify button, Job Card
+      serial dropdown / auto-select / persist + time-log serial guard.
+
+  - id: f001-c007
+    name: Manufacturing fixtures
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: globcom_manufacturing/fixtures/ + production_settings doctype
+    responsibility: >
+      Custom Fields (module=ITAG Manufacturing) on Serial No, Stock Entry,
+      Stock Entry Detail, Work Order, Work Order Item, Sales Order, Job Card
+      serial fields, Job Card Time Log. Stock Entry Types (Material Receipt/
+      Return - CPI). Production Settings single DocType.
