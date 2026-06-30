@@ -82,7 +82,7 @@ required_apps = ["erpnext"]
 # Installation
 # ------------
 
-# before_install = "erpcloud_itagksa.install.before_install"
+before_install = "erpcloud_itagksa.install.before_install"
 # after_install = "erpcloud_itagksa.install.after_install"
 
 # Uninstallation
