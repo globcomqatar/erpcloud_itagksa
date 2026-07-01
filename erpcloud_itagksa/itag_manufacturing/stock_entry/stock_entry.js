@@ -8,8 +8,12 @@
  * when user enters serial numbers in Stock Entry Detail items.
  */
 
+const MATERIAL_RECEIPT_CPI = 'Material Receipt - CPI';
+
 frappe.ui.form.on('Stock Entry', {
     refresh: function(frm) {
+        apply_cpi_default_warehouse(frm);
+
         // Re-apply lock on form load for CPI checkboxes
         if (frm.doc.custom_customer_property_grn || frm.doc.custom_customer_property_return) {
             frm.set_df_property('stock_entry_type', 'read_only', 1);
@@ -30,6 +34,12 @@ frappe.ui.form.on('Stock Entry', {
                 create_sales_order_from_stock_entry(frm);
             }, __('Create'));
         }
+    },
+
+    stock_entry_type: function(frm) {
+        // When the type becomes a CPI receipt (button or checkbox), pre-fill the
+        // default target warehouse so the user sees it before saving.
+        apply_cpi_default_warehouse(frm);
     },
 
     custom_customer_property_grn: function(frm) {
@@ -56,6 +66,20 @@ frappe.ui.form.on('Stock Entry', {
 });
 
 frappe.ui.form.on('Stock Entry Detail', {
+    items_add: function(frm, cdt, cdn) {
+        // Fill a newly added row's target warehouse with the cached CPI default.
+        if (frm.doc.stock_entry_type !== MATERIAL_RECEIPT_CPI) {
+            return;
+        }
+        if (!frm.__cpi_default_warehouse) {
+            return;
+        }
+        const row = locals[cdt][cdn];
+        if (!row.t_warehouse) {
+            frappe.model.set_value(cdt, cdn, 't_warehouse', frm.__cpi_default_warehouse);
+        }
+    },
+
     serial_no: function(frm, cdt, cdn) {
         // Get the current row
         let row = locals[cdt][cdn];
@@ -114,6 +138,50 @@ frappe.ui.form.on('Stock Entry Detail', {
         }
     }
 });
+
+
+/**
+ * Pre-fill the default target warehouse on a draft CPI Material Receipt so the
+ * user sees it before saving. Reads default_target_warehouse from ITAG KSA
+ * Settings, sets the header to_warehouse and any empty item t_warehouse, and
+ * shows a notice. The server before_validate handler remains the authority on
+ * save; this is display only. Skips when the user already chose a warehouse.
+ */
+function apply_cpi_default_warehouse(frm) {
+    if (frm.doc.docstatus !== 0) {
+        return;  // draft only
+    }
+    if (frm.doc.stock_entry_type !== MATERIAL_RECEIPT_CPI) {
+        return;
+    }
+
+    frappe.db.get_single_value('ITAG KSA Settings', 'default_target_warehouse').then(warehouse => {
+        if (!warehouse) {
+            return;
+        }
+        frm.__cpi_default_warehouse = warehouse;
+
+        let filled = false;
+        if (!frm.doc.to_warehouse) {
+            frm.set_value('to_warehouse', warehouse);
+            filled = true;
+        }
+        (frm.doc.items || []).forEach(row => {
+            if (!row.t_warehouse) {
+                frappe.model.set_value(row.doctype, row.name, 't_warehouse', warehouse);
+                filled = true;
+            }
+        });
+
+        if (filled) {
+            frm.refresh_field('items');
+            frappe.show_alert({
+                message: __('Target warehouse auto-filled from ITAG KSA Settings: {0}', [warehouse]),
+                indicator: 'blue'
+            }, 5);
+        }
+    });
+}
 
 
 /**

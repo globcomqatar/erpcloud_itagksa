@@ -4,6 +4,12 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.2.0 — 2026-07-01
+- Add `ITAG KSA Settings` (Single) with `default_target_warehouse` (Link → Warehouse) — the default receiving warehouse for the CPI GRN made from a Sales Order.
+- Default the target warehouse on CPI GRNs via a Stock Entry `before_validate` handler (`set_default_target_warehouse`): fills `to_warehouse` and any empty item `t_warehouse` for stock entry type `Material Receipt - CPI`. Runs before ERPNext's `validate_warehouse`, so the "Target warehouse is mandatory" throw no longer blocks the save. Path-independent — covers the Sales Order GRN button, the `custom_customer_property_grn` checkbox, and manual entry. Wired via `doc_events.before_validate` in `hooks.py`.
+- Pre-fill the CPI GRN target warehouse client-side (`stock_entry.js` `apply_cpi_default_warehouse`) on `refresh` / `stock_entry_type` / `items_add`, with a `show_alert` notice so the user sees it is auto-filled before saving. Display only; the `before_validate` handler stays authoritative on save. Skips if the user already chose a warehouse.
+- Relabel `Stock Entry.custom_inward_inspection_required` → "Quality Verification Required", description "Only for customer property items" (fieldname unchanged — no data impact).
+
 ### 15.1.4 — 2026-06-30
 - Fix install/migrate abort `A field with the name <x> already exists` when a target site has a Custom Field whose doc name no longer matches this app's fixture (e.g. a field that was fieldname-renamed in globcom, leaving a frozen/typo'd doc name). Add `reconcile_stale_custom_field_names`, run from both a `before_install` hook (fresh-install path) and a `pre_model_sync` patch (migrate/retry path), so a console-less deploy self-heals either way. Fixture-driven and idempotent; renames the live doc to the fixture name (column keyed by fieldname → 0 data impact), and the fixture sync then re-owns its module.
 

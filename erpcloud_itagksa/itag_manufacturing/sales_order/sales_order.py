@@ -26,7 +26,11 @@ def create_material_receipt_from_sales_order(source_name, target_doc=None):
     """
 
     def set_missing_values(source, target):
-        """Set custom fields and stock entry type."""
+        """Set custom fields and stock entry type.
+
+        The default target warehouse is applied by the Stock Entry before_validate
+        handler (set_default_target_warehouse), which covers every CPI GRN path.
+        """
         target.stock_entry_type = "Material Receipt - CPI"
         target.posting_date = today()
         target.custom_customer_sales_order_number = source.name

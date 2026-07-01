@@ -17,6 +17,50 @@ from erpcloud_itagksa.itag_manufacturing.utils.serial_no_validation import (
     update_serial_no_master_on_receipt
 )
 
+MATERIAL_RECEIPT_CPI = "Material Receipt - CPI"
+
+
+def before_validate(doc, method=None):
+    """Set defaults before core validation runs.
+
+    Called via doc_events hook in hooks.py. Must run before validate so the
+    target-warehouse default lands ahead of ERPNext's validate_warehouse, which
+    otherwise throws "Target warehouse is mandatory".
+
+    Args:
+        doc: Stock Entry document
+        method: Event method name (not used)
+    """
+    set_default_target_warehouse(doc)
+
+
+def set_default_target_warehouse(doc):
+    """Default the target warehouse on a CPI Material Receipt (GRN).
+
+    Reads default_target_warehouse from ITAG KSA Settings and fills the header
+    to_warehouse plus any item missing a t_warehouse. Covers every CPI GRN entry
+    path — Sales Order "Good Receipt Note" button, the custom_customer_property_grn
+    checkbox, and manual entry.
+
+    Args:
+        doc: Stock Entry document
+    """
+    if doc.stock_entry_type != MATERIAL_RECEIPT_CPI:
+        return
+
+    default_warehouse = frappe.db.get_single_value(
+        "ITAG KSA Settings", "default_target_warehouse"
+    )
+    if not default_warehouse:
+        return
+
+    if not doc.to_warehouse:
+        doc.to_warehouse = default_warehouse
+
+    for item in doc.items:
+        if not item.t_warehouse:
+            item.t_warehouse = default_warehouse
+
 
 def validate(doc, method=None):
     """Validate Stock Entry before save/submit.

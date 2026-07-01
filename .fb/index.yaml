@@ -24,3 +24,10 @@ features:
     origin: globcom_manufacturing
     depends_on: [f001]
     components: 5
+  - fid: f003
+    slug: cpi-grn-default-warehouse
+    module: itag_manufacturing
+    title: CPI GRN Default Target Warehouse + QV Label
+    status: done
+    depends_on: [f001]
+    components: 3

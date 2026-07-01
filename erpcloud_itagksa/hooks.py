@@ -254,6 +254,7 @@ before_install = "erpcloud_itagksa.install.before_install"
 
 doc_events = {
 	"Stock Entry": {
+		"before_validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.before_validate",
 		"validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.validate",
 		"on_submit": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
 		"on_cancel": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",

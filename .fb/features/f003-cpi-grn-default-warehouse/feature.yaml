@@ -1,0 +1,68 @@
+fid: f003
+slug: cpi-grn-default-warehouse
+module: itag_manufacturing
+title: CPI GRN Default Target Warehouse + QV Label
+depends_on: [f001]
+description: >
+  Default the target warehouse on the Material Receipt (GRN) created from a
+  Sales Order via the "Good Receipt Note" button. A new Single, ITAG KSA
+  Settings, holds default_target_warehouse; the SO -> Material Receipt mapper
+  (f001 sales_order.py) reads it and sets the Stock Entry to_warehouse plus each
+  item t_warehouse when empty. Also relabels the Stock Entry
+  custom_inward_inspection_required field to "Quality Verification Required"
+  with description "Only for customer property items" to match the CPI wording.
+
+status_history: open --> done
+created: 2026-07-01
+
+components:
+  - id: f003-c001
+    name: ITAG KSA Settings (Single)
+    type: doctype
+    stage: done
+    status_history: open --> done
+    source: itag_manufacturing/doctype/itag_ksa_settings/
+    responsibility: >
+      Single config doctype. Field default_target_warehouse (Link -> Warehouse):
+      default receiving warehouse for the CPI GRN made from a Sales Order.
+
+  - id: f003-c002
+    name: CPI GRN default target warehouse
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f003-c001]
+    source: itag_manufacturing/stock_entry/stock_entry.py
+    responsibility: >
+      Stock Entry before_validate handler set_default_target_warehouse reads
+      ITAG KSA Settings.default_target_warehouse and fills to_warehouse plus any
+      item t_warehouse (where empty) for stock_entry_type "Material Receipt - CPI".
+      Runs before ERPNext validate_warehouse so its mandatory-warehouse throw is
+      avoided. Path-independent — covers the Sales Order GRN button, the
+      custom_customer_property_grn checkbox, and manual entry. Wired via
+      doc_events before_validate in hooks.py.
+
+  - id: f003-c004
+    name: CPI GRN warehouse client pre-fill
+    type: client_script
+    stage: done
+    status_history: open --> done
+    depends_on: [f003-c001, f003-c002]
+    source: itag_manufacturing/stock_entry/stock_entry.js
+    responsibility: >
+      apply_cpi_default_warehouse pre-fills to_warehouse + empty item t_warehouse
+      on a draft Material Receipt - CPI from ITAG KSA Settings, with a
+      show_alert notice so the user sees it is auto-filled. Wired on refresh,
+      stock_entry_type, and items_add. Display only — server before_validate
+      (f003-c002) stays authoritative on save. Skips if the user set a warehouse.
+
+  - id: f003-c003
+    name: Quality Verification Required relabel
+    type: fixture
+    stage: done
+    status_history: open --> working --> done
+    source: fixtures/custom_field.json (Stock Entry-custom_inward_inspection_required)
+    responsibility: >
+      Relabel custom_inward_inspection_required to "Quality Verification
+      Required", description "Only for customer property items". Fieldname
+      unchanged (no data impact, doc_events/JS refs preserved).
