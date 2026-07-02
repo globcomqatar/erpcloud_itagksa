@@ -17,6 +17,8 @@ No push without both. A code change with no version bump and no changelog entry 
 
 **One version per push.** Accumulate all changes since the last push into a single pending version — do not cut a new version per tweak. Keep changelog bullets **compact**: one line per change, no sub-detail. Fold follow-up edits into the pending unreleased entry rather than adding a new one.
 
+**Plain language.** Write changelog bullets in concise, plain language — describe the user-facing change, not the implementation. Avoid field/function names, file paths, and internal jargon where a plain phrase works.
+
 ### Versioning (semver)
 - **patch** (`x.y.Z`) — bug fix, no behavior change.
 - **minor** (`x.Y.0`) — new feature, backward compatible.
