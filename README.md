@@ -4,6 +4,11 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.3.0 — 2026-07-02
+- Add the Calibration / Collaboration Service PO flow (ported from `erpcloud_itagqatar`, f004): `custom_is_collaboration_service_po` flag on Material Request + Purchase Order enables per-row `custom_sub_item` (Calibration Item), `custom_serial_no`, read-only `custom_sub_item_description` on the item tables (first-section second column). MR flag sits at the end of the first-section right column.
+- Material Issue button on a submitted collab PO maps it to an Issue Stock Entry (`Material Issue to Supplier`); Create GRN button on the Issue SE maps back to a Receipt SE (`Material Receipt from Supplier`). PO `custom_collaboration_status` rolls up Pending → Partially → Fully Issued from submitted Issue SEs.
+- Serial validation on MR + PO (`utils/collab_serial.py`). `validate_receipt_qty` toggle on `ITAG KSA Settings` gates the GRN receipt-qty guard. New Stock Entry Types + `hooks.py` wiring (list-form `doc_events`, `doctype_js`, `app_include_js`).
+
 ### 15.2.0 — 2026-07-01
 - Add `ITAG KSA Settings` (Single) with `default_target_warehouse` (Link → Warehouse) — the default receiving warehouse for the CPI GRN made from a Sales Order.
 - Default the target warehouse on CPI GRNs via a Stock Entry `before_validate` handler (`set_default_target_warehouse`): fills `to_warehouse` and any empty item `t_warehouse` for stock entry type `Material Receipt - CPI`. Runs before ERPNext's `validate_warehouse`, so the "Target warehouse is mandatory" throw no longer blocks the save. Path-independent — covers the Sales Order GRN button, the `custom_customer_property_grn` checkbox, and manual entry. Wired via `doc_events.before_validate` in `hooks.py`.

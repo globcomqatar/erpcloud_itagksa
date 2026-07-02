@@ -1,2 +1,3 @@
 ITAG Manufacturing
 ITAG Quality
+ITAG Stock

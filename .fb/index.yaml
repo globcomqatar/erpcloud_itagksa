@@ -31,3 +31,11 @@ features:
     status: done
     depends_on: [f001]
     components: 3
+  - fid: f004
+    slug: calibration-collaboration-service-po
+    module: itag_manufacturing
+    title: Calibration / Collaboration Service PO
+    status: done
+    origin: erpcloud_itagqatar
+    depends_on: [f003]
+    components: 12

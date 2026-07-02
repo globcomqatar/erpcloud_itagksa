@@ -4,9 +4,27 @@
   "docstatus": 0,
   "doctype": "Stock Entry Type",
   "is_standard": 0,
+  "modified": "2026-05-05 14:52:40.065854",
+  "name": "Material Issue to Supplier",
+  "purpose": "Material Transfer"
+ },
+ {
+  "add_to_transit": 0,
+  "docstatus": 0,
+  "doctype": "Stock Entry Type",
+  "is_standard": 0,
   "modified": "2026-04-14 11:21:42.249152",
   "name": "Material Return - CPI",
   "purpose": "Material Issue"
+ },
+ {
+  "add_to_transit": 0,
+  "docstatus": 0,
+  "doctype": "Stock Entry Type",
+  "is_standard": 0,
+  "modified": "2026-05-05 14:52:40.071579",
+  "name": "Material Receipt from Supplier",
+  "purpose": "Material Transfer"
  },
  {
   "add_to_transit": 0,

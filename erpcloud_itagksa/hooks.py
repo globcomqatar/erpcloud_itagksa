@@ -28,6 +28,9 @@ required_apps = ["erpnext"]
 # app_include_css = "/assets/erpcloud_itagksa/css/erpcloud_itagksa.css"
 # app_include_js = "/assets/erpcloud_itagksa/js/erpcloud_itagksa.js"
 
+# Collaboration service: shared frappe.itagksa.* serial helpers used by PO/MR forms
+app_include_js = "/assets/erpcloud_itagksa/js/collab_serial.js"
+
 # include js, css files in header of web template
 # web_include_css = "/assets/erpcloud_itagksa/css/erpcloud_itagksa.css"
 # web_include_js = "/assets/erpcloud_itagksa/js/erpcloud_itagksa.js"
@@ -255,9 +258,18 @@ before_install = "erpcloud_itagksa.install.before_install"
 doc_events = {
 	"Stock Entry": {
 		"before_validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.before_validate",
-		"validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.validate",
-		"on_submit": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
-		"on_cancel": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",
+		"validate": [
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.validate",
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.validate",
+		],
+		"on_submit": [
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.on_submit",
+		],
+		"on_cancel": [
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",
+			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.on_cancel",
+		],
 	},
 	"BOM": {
 		"before_save": "erpcloud_itagksa.itag_quality.acceptance_criteria.acceptance_criteria.propagate_bom_from_routing",
@@ -281,14 +293,23 @@ doc_events = {
 	},
 	"Material Request": {
 		"before_save": "erpcloud_itagksa.itag_quality.material_request.material_request.before_save",
+		"validate": "erpcloud_itagksa.itag_manufacturing.material_request.material_request.validate",
+	},
+	"Purchase Order": {
+		"validate": "erpcloud_itagksa.itag_manufacturing.purchase_order.purchase_order.validate",
 	},
 }
 
 doctype_js = {
 	"Sales Order": "itag_manufacturing/sales_order/sales_order.js",
-	"Stock Entry": "itag_manufacturing/stock_entry/stock_entry.js",
+	"Stock Entry": [
+		"itag_manufacturing/stock_entry/stock_entry.js",
+		"itag_manufacturing/stock_entry/collab_stock_entry.js",
+	],
 	"Job Card": "itag_manufacturing/job_card/job_card.js",
 	"Work Order": "itag_manufacturing/work_order/work_order.js",
+	"Purchase Order": "itag_manufacturing/purchase_order/purchase_order.js",
+	"Material Request": "itag_manufacturing/material_request/material_request.js",
 }
 
 fixtures = [
@@ -302,7 +323,18 @@ fixtures = [
 	},
 	{
 		"dt": "Stock Entry Type",
-		"filters": [["name", "in", ["Material Receipt - CPI", "Material Return - CPI"]]],
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Material Receipt - CPI",
+					"Material Return - CPI",
+					"Material Issue to Supplier",
+					"Material Receipt from Supplier",
+				],
+			]
+		],
 	},
 ]
 

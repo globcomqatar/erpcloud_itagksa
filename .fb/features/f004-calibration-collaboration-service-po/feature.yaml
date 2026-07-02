@@ -1,0 +1,181 @@
+fid: f004
+slug: calibration-collaboration-service-po
+module: itag_manufacturing
+title: Calibration / Collaboration Service PO
+depends_on: [f003]
+origin: erpcloud_itagqatar
+description: >
+  Collaboration service flow that ships a customer's Calibration Item to a
+  supplier for service work and tracks the issue/receipt cycle via Stock Entry.
+  Ported from erpcloud_itagqatar (feature f005). Material Request and Purchase
+  Order carry a collaboration flag plus per-row Calibration Item, Serial No, and
+  Description (child fields land in the second column of the item row's first
+  section, ordered item -> serial -> description). A "Material Issue" button on a
+  submitted collaboration PO maps it to an Issue Stock Entry ("Material Issue to
+  Supplier"); a "Create GRN" button on the Issue SE maps it back to a Receipt SE
+  ("Material Receipt from Supplier"). PO custom_collaboration_status rolls up
+  Pending -> Partially Issued -> Fully Issued from submitted Issue SEs. Serial
+  validation (belongs to the Calibration Item, not already delivered) runs on MR
+  and PO. The cumulative receipt-qty guard is gated by a new
+  validate_receipt_qty toggle on ITAG KSA Settings.
+
+status_history: open --> working --> done
+created: 2026-07-02
+
+components:
+  - id: f004-c001
+    name: Collaboration custom fields
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json (module ITAG Manufacturing)
+    responsibility: >
+      15 Custom Fields. Parent flags custom_is_collaboration_service_po on
+      Material Request and Purchase Order; PO custom_supplier_store and
+      custom_collaboration_status. Child fields custom_sub_item (Calibration
+      Item), custom_serial_no, custom_sub_item_description on Material Request
+      Item and Purchase Order Item (anchored into the first-section second column
+      via item_group / schedule_date, chained item -> serial -> description;
+      custom_sub_item_description is read-only, populated from the Calibration Item).
+      Stock Entry custom_is_collaboration_delivery_note, custom_is_collaboration_grn,
+      custom_purchase_order, custom_supplier, custom_supplier_name (SE fields
+      chained after custom_customer_property_return; MR flag at the end of the
+      first-section right column, insert_after amended_from).
+
+  - id: f004-c002
+    name: ITAG KSA Settings receipt-qty toggle
+    type: fixture
+    stage: done
+    status_history: open --> done
+    depends_on: [f003-c001]
+    source: fixtures/custom_field.json (ITAG KSA Settings-validate_receipt_qty)
+    responsibility: >
+      Check field validate_receipt_qty on the ITAG KSA Settings Single. Gates the
+      collaboration GRN cumulative receipt-qty guard (replaces qatar's ERPCloud
+      Settings, which does not exist in ksa).
+
+  - id: f004-c003
+    name: Supplier Stock Entry Types
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/stock_entry_type.json + hooks.py fixture filter
+    responsibility: >
+      Two Stock Entry Type records, "Material Issue to Supplier" and "Material
+      Receipt from Supplier", both purpose "Material Transfer". Fixture filter in
+      hooks.py extended to ship them alongside the CPI types.
+
+  - id: f004-c004
+    name: Collaboration serial validator (shared)
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    source: itag_manufacturing/utils/collab_serial.py
+    responsibility: >
+      validate_serial_no_items(doc, title): for each row with custom_serial_no
+      set, require custom_sub_item and verify the serial exists, belongs to that
+      Calibration Item, and is not Delivered. Shared by PO and MR validate.
+      Deliberately separate from utils/serial_no_validation.py (which checks
+      heat/part/drawing attributes) — different rule, different flow.
+
+  - id: f004-c005
+    name: Purchase Order controller
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f004-c001, f004-c004]
+    source: itag_manufacturing/purchase_order/purchase_order.py
+    responsibility: >
+      validate delegates to the shared serial validator when the collab flag is
+      set. make_material_issue_se (whitelisted) maps a submitted collab PO to a
+      draft Issue Stock Entry. recompute_collaboration_status rolls up
+      Pending/Partially Issued/Fully Issued from submitted Issue SEs. Wired via
+      doc_events validate.
+
+  - id: f004-c006
+    name: Material Request controller
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f004-c001, f004-c004]
+    source: itag_manufacturing/material_request/material_request.py
+    responsibility: >
+      validate delegates to the shared serial validator when the collab flag is
+      set. Added as a second Material Request doc_events handler alongside the
+      existing itag_quality before_save (no collision).
+
+  - id: f004-c007
+    name: Stock Entry collaboration loop
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f004-c001, f004-c002, f004-c005]
+    source: itag_manufacturing/stock_entry/collab_stock_entry.py
+    responsibility: >
+      validate: mutual-exclusion (not both delivery note and GRN) + cumulative
+      receipt-qty guard gated by ITAG KSA Settings.validate_receipt_qty.
+      on_submit/on_cancel recompute the PO collaboration status for Issue SEs.
+      pull_from_po and make_grn_from_issue (whitelisted) build draft SEs. Kept in
+      a separate module from the existing stock_entry.py handler; registered via
+      list-form doc_events so both run.
+
+  - id: f004-c008
+    name: Collaboration serial client helper (shared)
+    type: client_script
+    stage: done
+    status_history: open --> done
+    source: public/js/collab_serial.js (app_include_js)
+    responsibility: >
+      frappe.itagksa.* helpers: restrict the row Serial No to the Calibration
+      Item (delivered hidden), fill/verify the Calibration Item on serial pick,
+      and clear a stale serial when the Calibration Item changes. Loaded globally
+      via app_include_js (newly enabled in hooks.py).
+
+  - id: f004-c009
+    name: Purchase Order client
+    type: client_script
+    stage: done
+    status_history: open --> done
+    depends_on: [f004-c005, f004-c008]
+    source: itag_manufacturing/purchase_order/purchase_order.js
+    responsibility: >
+      Material Issue button (Create group) on a submitted collab PO not yet Fully
+      Issued; binds the shared serial helpers on PO Item rows. Wired via
+      doctype_js.
+
+  - id: f004-c010
+    name: Material Request client
+    type: client_script
+    stage: done
+    status_history: open --> done
+    depends_on: [f004-c008]
+    source: itag_manufacturing/material_request/material_request.js
+    responsibility: >
+      Binds the shared serial helpers on Material Request Item rows and registers
+      the serial query. Wired via doctype_js (new Material Request entry).
+
+  - id: f004-c011
+    name: Stock Entry collaboration client
+    type: client_script
+    stage: done
+    status_history: open --> done
+    depends_on: [f004-c007]
+    source: itag_manufacturing/stock_entry/collab_stock_entry.js
+    responsibility: >
+      Create GRN button on a submitted Issue SE; delivery-note/GRN checkboxes set
+      and lock the Stock Entry Type; picking a PO on a draft Issue SE pulls its
+      sub-items via pull_from_po. Added as a second Stock Entry doctype_js file
+      alongside the existing stock_entry.js.
+
+  - id: f004-c012
+    name: hooks wiring
+    type: config
+    stage: done
+    status_history: open --> done
+    source: hooks.py
+    responsibility: >
+      Enable app_include_js for collab_serial.js; add Purchase Order and Material
+      Request to doctype_js; make Stock Entry doctype_js a list; add Purchase
+      Order validate and Material Request validate doc_events; convert Stock Entry
+      validate/on_submit/on_cancel doc_events to lists including the collab
+      handlers; extend the Stock Entry Type fixture filter.
