@@ -4,6 +4,10 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.3.1 — 2026-07-02
+- Sales Order now lists its linked Stock Entries in the Connections panel.
+- Ship the new ITAG Stock custom fields as app fixtures so they deploy with the app.
+
 ### 15.3.0 — 2026-07-02
 - Add the Calibration / Collaboration Service PO flow (ported from `erpcloud_itagqatar`, f004): `custom_is_collaboration_service_po` flag on Material Request + Purchase Order enables per-row `custom_sub_item` (Calibration Item), `custom_serial_no`, read-only `custom_sub_item_description` on the item tables (first-section second column). MR flag sits at the end of the first-section right column.
 - Material Issue button on a submitted collab PO maps it to an Issue Stock Entry (`Material Issue to Supplier`); Create GRN button on the Issue SE maps back to a Receipt SE (`Material Receipt from Supplier`). PO `custom_collaboration_status` rolls up Pending → Partially → Fully Issued from submitted Issue SEs.

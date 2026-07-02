@@ -312,14 +312,18 @@ doctype_js = {
 	"Material Request": "itag_manufacturing/material_request/material_request.js",
 }
 
+override_doctype_dashboards = {
+	"Sales Order": "erpcloud_itagksa.itag_manufacturing.sales_order.sales_order_dashboard.get_dashboard_data",
+}
+
 fixtures = [
 	{
 		"dt": "Custom Field",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock"]]],
 	},
 	{
 		"dt": "Property Setter",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock"]]],
 	},
 	{
 		"dt": "Stock Entry Type",

@@ -9,7 +9,7 @@ description: >
   to Work Orders, carried through Job Cards, and rolled back to Sales Order GRN
   status. Migrated as-is from globcom_manufacturing.
 
-status_history: open --> done
+status_history: open --> done --> working --> done
 created: 2026-06-30
 migrated: 2026-06-30
 
@@ -92,3 +92,15 @@ components:
       Stock Entry Detail, Work Order, Work Order Item, Sales Order, Job Card
       serial fields, Job Card Time Log. Stock Entry Types (Material Receipt/
       Return - CPI). Production Settings single DocType.
+
+  - id: f001-c008
+    name: Sales Order dashboard connection
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: itag_manufacturing/sales_order/sales_order_dashboard.py
+    depends_on: [f001-c004]
+    responsibility: >
+      override_doctype_dashboards for Sales Order. Adds a Stock Entry group +
+      non_standard_fieldnames map (custom_customer_sales_order_number) so the
+      SO Connections tab lists/counts linked CPI Stock Entries.

@@ -15,7 +15,7 @@ features:
     title: Subcontract Manufacturing + Serial/Heat Traceability
     status: done
     origin: globcom_manufacturing
-    components: 7
+    components: 8
   - fid: f002
     slug: itag-quality-inspection-gating
     module: itag_quality
