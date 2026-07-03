@@ -1,0 +1,38 @@
+fid: f005
+slug: item-type-backfill
+module: itag_quality
+title: Item Type Backfill from Header Flags
+depends_on: []
+description: >
+  Backfill the line Item Type (custom_product_type) on already-submitted
+  Material Requests and Purchase Orders from the parent header's Critical /
+  Non-Critical / General checkboxes. One checkbox ticked on the header sets that
+  Item Type on every line of the document. Only runs for submitted parents
+  (docstatus=1) with exactly one checkbox set, so there is no ambiguity.
+  The header checkbox columns (custom_critical / custom_noncritical /
+  custom_general) exist physically on both tabMaterial Request and
+  tabPurchase Order on itagksa.dev but have no Custom Field metadata record —
+  the patch keys off the real column via has_column, so it backfills wherever
+  the columns and data live and safely no-ops where they are absent (KSA/Qatar
+  parallel stacks). Purchase Receipt is out of scope — no header checkbox source.
+
+status_history: open --> done
+created: 2026-07-03
+
+components:
+  - id: f005-c001
+    name: Item Type backfill patch
+    type: patch
+    stage: done
+    status_history: open --> working --> done
+    source: erpcloud_itagksa/patches/backfill_product_type_from_parent_flags.py
+    responsibility: >
+      post_model_sync patch backfill_product_type_from_parent_flags. For each
+      (parent, child) in {Material Request: Material Request Item, Purchase
+      Order: Purchase Order Item}: skip unless the child has custom_product_type
+      and the parent has at least one source checkbox (has_column guard). Bulk
+      SQL UPDATE sets each line's custom_product_type from the single ticked
+      header flag, filtered to docstatus=1 and exactly one flag set
+      (coalesce-guarded sum). Idempotent; explicit commit. Registered in
+      patches.txt. Verified on itagksa.dev: 456 MR + 373 PO lines, zero
+      mismatches.

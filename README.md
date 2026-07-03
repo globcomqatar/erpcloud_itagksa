@@ -4,6 +4,9 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.3.2 — 2026-07-03
+- Backfill the line Item Type on already-submitted Material Requests and Purchase Orders from the header Critical / Non-Critical / General checkbox — one ticked box sets that type on every line. Skips documents with no box or more than one box ticked.
+
 ### 15.3.1 — 2026-07-02
 - Sales Order now lists its linked Stock Entries in the Connections panel.
 - Ship the new ITAG Stock custom fields as app fixtures so they deploy with the app.
