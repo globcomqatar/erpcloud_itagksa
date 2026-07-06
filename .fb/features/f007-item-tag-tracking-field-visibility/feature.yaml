@@ -1,0 +1,74 @@
+fid: f007
+slug: item-tag-tracking-field-visibility
+module: itag_stock
+title: Item-Tag Serial Tracking + Field Visibility
+description: >
+  Item Tag traceability plus a set of role- and state-driven field-visibility
+  rules. Item Tag (Data) is captured per line on Material Request, Purchase
+  Receipt and Stock Entry when the item's "Track Item Tags" checkbox is on, and
+  on receipt submit the tag is written onto each serial number created. The tag
+  is searchable from the Serial No link lookup. Visibility rules: the Material
+  Request calibration-service flag shows only to Quality User / Quality Manager;
+  the Purchase Order and Stock Entry calibration / quality-verification flags
+  show only once set. The two Stock Entry calibration flags are relabelled to
+  Material Issue / Material Receipt wording. Data model (Item.custom_track_item_tags,
+  Serial No.custom_item_tag, MR Item field reorder) was pre-built via the
+  Customize UI by the user.
+
+status_history: open --> working --> done
+created: 2026-07-06
+
+components:
+  - id: f007-c001
+    name: Item-tag line fields + gate
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json (module ITAG Stock)
+    responsibility: >
+      custom_item_tag (Small Text, after batch_no) added to Purchase Receipt Item
+      and Stock Entry Detail — multi-line, one tag per serial like heat numbers.
+      Shown when the row's hidden custom_track_item_tags gate (fetched from
+      Item.custom_track_item_tags) is set; mandatory only on incoming rows
+      (Stock Entry: has target, no source). Material Request Item carries no
+      serials/batch, so it gets no tag field. Captured by the ITAG Stock fixture filter.
+
+  - id: f007-c002
+    name: Receipt tag-to-serial binding
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f007-c001]
+    source: itag_stock/receipt_tag.py
+    responsibility: >
+      validate_item_tags (validate) enforces a 1:1 count of Item Tags to serial
+      numbers on incoming rows, mirroring the serial:heat rule. bind_item_tags
+      (on_submit) writes tag[i] onto serial[i] in entry order (parsed via
+      get_serial_nos). Both scoped to incoming rows (no source warehouse). Wired
+      via doc_events on Purchase Receipt + Stock Entry (validate + on_submit).
+
+  - id: f007-c003
+    name: Field-visibility rules
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json (depends_on)
+    responsibility: >
+      depends_on set on existing custom fields — Material Request
+      custom_is_collaboration_service_po gated to Quality User / Quality Manager
+      roles; Purchase Order custom_is_collaboration_service_po, Stock Entry
+      custom_is_collaboration_delivery_note / custom_is_collaboration_grn /
+      custom_inward_inspection_required shown only when their own value is set.
+      UI visibility only, not a permission boundary.
+
+  - id: f007-c004
+    name: Relabels + searchable tag
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json + property_setter.json
+    responsibility: >
+      Relabel Stock Entry custom_is_collaboration_delivery_note to "Calibration
+      Item Material Issue" and custom_is_collaboration_grn to "Calibration Item
+      Material Receipt" (fieldname unchanged). Property Setter adds custom_item_tag
+      to the Serial No search_fields so serials are findable by tag.

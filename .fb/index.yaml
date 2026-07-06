@@ -10,6 +10,9 @@ modules:
   - id: itag_ksa_buying
     label: Itag Ksa Buying
     description: Supplier approval + re-evaluation lifecycle.
+  - id: itag_stock
+    label: ITAG Stock
+    description: Serial-tag traceability on receipts + role/state field visibility.
 
 features:
   - fid: f001
@@ -50,3 +53,9 @@ features:
     title: Supplier Approval + Re-Evaluation Freeze
     status: done
     components: 5
+  - fid: f007
+    slug: item-tag-tracking-field-visibility
+    module: itag_stock
+    title: Item-Tag Serial Tracking + Field Visibility
+    status: done
+    components: 4

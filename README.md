@@ -4,6 +4,12 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.5.0 — 2026-07-06
+- Capture one Item Tag per serial number on stock and purchase receipts when the item tracks tags — tags are entered line-by-line like heat numbers, validated one-to-one against the serials, and written onto each serial number. Item tags are searchable from the serial-number lookup.
+- Show the Calibration Service flag on Material Request only to Quality staff.
+- On Purchase Orders and Stock Entries, show the calibration and quality-verification flags only once they are set.
+- Rename the Stock Entry calibration flags to "Calibration Item Material Issue" and "Calibration Item Material Receipt".
+
 ### 15.4.0 — 2026-07-06
 - Supplier Approval: auto-fill the next re-evaluation date from the last re-evaluation (or first approval) plus the chosen frequency.
 - Freeze a supplier automatically once its re-evaluation is due or any of its documents expire; unfreezing stays manual.
