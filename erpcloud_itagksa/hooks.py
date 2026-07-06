@@ -298,6 +298,15 @@ doc_events = {
 	"Purchase Order": {
 		"validate": "erpcloud_itagksa.itag_manufacturing.purchase_order.purchase_order.validate",
 	},
+	"Supplier": {
+		"validate": "erpcloud_itagksa.itag_ksa_buying.supplier.supplier.validate",
+	},
+}
+
+scheduler_events = {
+	"daily": [
+		"erpcloud_itagksa.itag_ksa_buying.tasks.freeze_lapsed_suppliers",
+	],
 }
 
 doctype_js = {
@@ -310,6 +319,7 @@ doctype_js = {
 	"Work Order": "itag_manufacturing/work_order/work_order.js",
 	"Purchase Order": "itag_manufacturing/purchase_order/purchase_order.js",
 	"Material Request": "itag_manufacturing/material_request/material_request.js",
+	"Supplier": "itag_ksa_buying/supplier/supplier.js",
 }
 
 override_doctype_dashboards = {
@@ -319,11 +329,11 @@ override_doctype_dashboards = {
 fixtures = [
 	{
 		"dt": "Custom Field",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying"]]],
 	},
 	{
 		"dt": "Property Setter",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying"]]],
 	},
 	{
 		"dt": "Stock Entry Type",

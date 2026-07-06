@@ -7,6 +7,9 @@ modules:
   - id: itag_quality
     label: ITAG Quality
     description: Quality inspection gating + acceptance criteria propagation.
+  - id: itag_ksa_buying
+    label: Itag Ksa Buying
+    description: Supplier approval + re-evaluation lifecycle.
 
 features:
   - fid: f001
@@ -41,3 +44,9 @@ features:
     origin: erpcloud_itagqatar
     depends_on: [f003]
     components: 12
+  - fid: f006
+    slug: supplier-approval-reevaluation
+    module: itag_ksa_buying
+    title: Supplier Approval + Re-Evaluation Freeze
+    status: done
+    components: 5

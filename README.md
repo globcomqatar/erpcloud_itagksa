@@ -4,6 +4,11 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.4.0 — 2026-07-06
+- Supplier Approval: auto-fill the next re-evaluation date from the last re-evaluation (or first approval) plus the chosen frequency.
+- Freeze a supplier automatically once its re-evaluation is due or any of its documents expire; unfreezing stays manual.
+- Show the Supplier Approval tab only to the role set in ITAG KSA Settings.
+
 ### 15.3.2 — 2026-07-03
 - Backfill the line Item Type on already-submitted Material Requests and Purchase Orders from the header Critical / Non-Critical / General checkbox — one ticked box sets that type on every line. Skips documents with no box or more than one box ticked.
 

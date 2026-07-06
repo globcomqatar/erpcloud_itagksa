@@ -1,12 +1,14 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2026-07-01 00:00:00.000000",
+ "creation": "2026-07-01 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "goods_receipt_note_section",
-  "default_target_warehouse"
+  "default_target_warehouse",
+  "supplier_section",
+  "reevaluation_role"
  ],
  "fields": [
   {
@@ -20,6 +22,17 @@
    "fieldtype": "Link",
    "label": "Default Target Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "fieldname": "supplier_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier"
+  },
+  {
+   "fieldname": "reevaluation_role",
+   "fieldtype": "Link",
+   "label": "Re-Evaluation Role",
+   "options": "Role"
   }
  ],
  "grid_page_length": 50,
@@ -27,7 +40,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-07-01 00:00:00.000000",
+ "modified": "2026-07-06 11:13:37.171693",
  "modified_by": "Administrator",
  "module": "ITAG Manufacturing",
  "name": "ITAG KSA Settings",
