@@ -2,6 +2,20 @@ frappe.provide("frappe.itagksa");
 
 const DELIVERED_STATUS = "Delivered";
 
+// Show the serial's Item Tag inline ("SN: Tag") in the collab Serial No link fields.
+// Reads the read-only custom_serial_no_tag fetch field on the row; scoped to the two
+// collab child tables so Serial No links elsewhere are untouched.
+frappe.form.link_formatters["Serial No"] = function (value, doc) {
+    if (
+        doc &&
+        doc.custom_serial_no_tag &&
+        ["Material Request Item", "Purchase Order Item"].includes(doc.doctype)
+    ) {
+        return `${value}: ${doc.custom_serial_no_tag}`;
+    }
+    return value;
+};
+
 // Restrict the row's Serial No link to serials of the selected Calibration Item,
 // and hide serials already delivered out.
 frappe.itagksa.set_collab_serial_query = function (frm) {
@@ -15,38 +29,17 @@ frappe.itagksa.set_collab_serial_query = function (frm) {
     });
 };
 
-// When a serial is picked: fill the Calibration Item from the serial if blank,
-// and reject a serial that belongs to a different item.
+// When a serial is picked and the Calibration Item is still blank, fill it from the
+// serial. The serial itself is never auto-cleared — any item/serial mismatch is left
+// to server-side validation on save.
 frappe.itagksa.on_collab_serial_set = function (frm, cdt, cdn) {
     const row = locals[cdt][cdn];
-    const serial = row.custom_serial_no;
-    if (!serial) return;
+    if (!row.custom_serial_no || row.custom_sub_item) return;
 
-    frappe.db.get_value("Serial No", serial, "item_code").then((r) => {
+    frappe.db.get_value("Serial No", row.custom_serial_no, "item_code").then((r) => {
         const serial_item = r.message && r.message.item_code;
-        if (!serial_item) return;
-
-        if (row.custom_sub_item && row.custom_sub_item !== serial_item) {
-            frappe.msgprint({
-                title: __("Serial item mismatch"),
-                message: __("Serial {0} belongs to {1}, not Calibration Item {2}.", [
-                    serial, serial_item, row.custom_sub_item,
-                ]),
-                indicator: "red",
-            });
-            frappe.model.set_value(cdt, cdn, "custom_serial_no", "");
-            return;
-        }
-        if (!row.custom_sub_item) {
+        if (serial_item) {
             frappe.model.set_value(cdt, cdn, "custom_sub_item", serial_item);
         }
     });
-};
-
-// Calibration Item changed → drop any serial that no longer matches the filter.
-frappe.itagksa.on_calibration_item_change = function (frm, cdt, cdn) {
-    const row = locals[cdt][cdn];
-    if (row.custom_serial_no) {
-        frappe.model.set_value(cdt, cdn, "custom_serial_no", "");
-    }
 };

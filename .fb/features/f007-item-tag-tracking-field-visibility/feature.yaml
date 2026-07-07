@@ -72,3 +72,17 @@ components:
       Item Material Issue" and custom_is_collaboration_grn to "Calibration Item
       Material Receipt" (fieldname unchanged). Property Setter adds custom_item_tag
       to the Serial No search_fields so serials are findable by tag.
+
+  - id: f007-c005
+    name: Outgoing tag fetch + validate
+    type: controller
+    stage: done
+    status_history: open --> done
+    depends_on: [f007-c002]
+    source: itag_stock/receipt_tag.py + itag_stock/stock_entry_tag.js
+    responsibility: >
+      The read-side mirror of the receipt bind. sync_outgoing_item_tags (Stock Entry
+      validate) fills a tag-tracked outgoing row's Item Tag from its serial masters and
+      throws if a typed tag disagrees; get_serial_tags (whitelisted) feeds the
+      stock_entry_tag.js live auto-fetch when serials are entered on an issue/transfer.
+      Item "Track Item Tags" checkbox relabelled "Has Item Tag".

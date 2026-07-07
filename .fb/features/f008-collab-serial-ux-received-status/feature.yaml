@@ -1,0 +1,60 @@
+fid: f008
+slug: collab-serial-ux-received-status
+module: itag_manufacturing
+title: Collaboration Serial UX + PO Received Status
+description: >
+  Second pass on the Calibration / Collaboration Service PO flow. Fixes the serial
+  picker (no more auto-clearing on select), shows the serial's Item Tag inline as
+  "Serial No: Tag", adds a Supplier Store on the Material Request that flows to the
+  Purchase Order, and extends the collaboration status so it recognises goods coming
+  back from the supplier (Partially / Fully Received), not just Issued.
+
+status_history: open --> working --> done
+created: 2026-07-07
+
+depends_on: [f005, f007]
+
+components:
+  - id: f008-c001
+    name: Collab serial picker UX
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: public/js/collab_serial.js + material_request/material_request.js + purchase_order/purchase_order.js + fixtures/custom_field.json
+    responsibility: >
+      Remove all automatic clearing of the calibration serial (the pick →
+      auto-fill sub_item → item-change → wipe cascade); the serial only changes when
+      the user changes it, mismatches left to server validation. Add a scoped
+      frappe.form.link_formatters["Serial No"] that renders "SN: Tag" on Material
+      Request Item + Purchase Order Item, fed by a new read-only custom_serial_no_tag
+      fetch field (fetch_from custom_serial_no.custom_item_tag). Relabel MR Item
+      custom_serial_no to "Serial No/Item Tag".
+
+  - id: f008-c002
+    name: Supplier Store MR -> PO
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json
+    responsibility: >
+      New custom_supplier_store (Link → Warehouse) on the Material Request parent,
+      shown + mandatory when custom_is_collaboration_service_po. Same fieldname as the
+      existing Purchase Order field, so standard make_purchase_order auto-copies it
+      MR → PO (verified: no field_no_map barrier on the parent map). No mapper code.
+
+  - id: f008-c003
+    name: PO Received status rollup
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f005]
+    source: itag_manufacturing/purchase_order/purchase_order.py + itag_manufacturing/stock_entry/collab_stock_entry.py + fixtures/custom_field.json
+    responsibility: >
+      Extend custom_collaboration_status with "Partially Received" / "Fully Received"
+      options and rollup: _received_sub_item_totals sums GRN Stock Entries
+      (custom_is_collaboration_grn=1) per sub-item against PO totals; once any receipt
+      exists the status reads Received (Fully when every sub-item is covered, else
+      Partially), else falls back to the issued status. Recompute now fires on GRN
+      submit + cancel (was Issue-only). Because the status is no longer terminal, the
+      Material Issue guard + button now key on is_fully_issued (issued vs PO totals)
+      instead of the "Fully Issued" string, so a return cannot reopen full re-issuing.

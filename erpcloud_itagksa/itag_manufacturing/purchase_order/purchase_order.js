@@ -9,17 +9,22 @@ frappe.ui.form.on("Purchase Order Item", {
     custom_serial_no(frm, cdt, cdn) {
         frappe.itagksa.on_collab_serial_set(frm, cdt, cdn);
     },
-    custom_sub_item(frm, cdt, cdn) {
-        frappe.itagksa.on_calibration_item_change(frm, cdt, cdn);
-    },
 });
 
 function _render_material_issue_button(frm) {
     if (!frm.doc.custom_is_collaboration_service_po) return;
     if (frm.doc.docstatus !== 1) return;
-    if (frm.doc.custom_collaboration_status === "Fully Issued") return;
 
-    frm.add_custom_button(__("Material Issue"), () => _on_material_issue_click(frm), __("Create"));
+    // Show the button until every sub-item is fully issued — not until the status is
+    // "Fully Issued", which returns move past once goods come back.
+    frappe.call({
+        method: "erpcloud_itagksa.itag_manufacturing.purchase_order.purchase_order.is_fully_issued",
+        args: { po_name: frm.doc.name },
+        callback: (r) => {
+            if (r.message) return;
+            frm.add_custom_button(__("Material Issue"), () => _on_material_issue_click(frm), __("Create"));
+        },
+    });
 }
 
 function _on_material_issue_click(frm) {

@@ -4,6 +4,14 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.5.1 — 2026-07-07
+- On material issues and transfers, fill each row's Item Tag from its serial numbers automatically, and block saving if a typed tag does not match the serial.
+- Rename the Item "Track Item Tags" checkbox to "Has Item Tag".
+- On calibration Material Requests and Purchase Orders, show the serial's Item Tag inline in the serial picker and relabel that field "Serial No/Item Tag".
+- Stop the calibration serial from being cleared the moment it is selected.
+- Add a Supplier Store to calibration Material Requests that carries over to the Purchase Order.
+- Extend the calibration Purchase Order status to "Partially Received" / "Fully Received" once goods return from the supplier; the Material Issue button no longer reopens after a return.
+
 ### 15.5.0 — 2026-07-06
 - Capture one Item Tag per serial number on stock and purchase receipts when the item tracks tags — tags are entered line-by-line like heat numbers, validated one-to-one against the serials, and written onto each serial number. Item tags are searchable from the serial-number lookup.
 - Show the Calibration Service flag on Material Request only to Quality staff.

@@ -49,6 +49,63 @@ def bind_item_tags(doc, method=None):
 			frappe.db.set_value("Serial No", serial_no, "custom_item_tag", tag)
 
 
+def sync_outgoing_item_tags(doc, method=None):
+	"""Fetch each outgoing row's Item Tags from its serial numbers and verify them.
+
+	The mirror of bind_item_tags: on an issue or transfer the serials already carry
+	their tags, so the row must reflect them. A blank row is auto-filled from the
+	serial masters; a row whose tags disagree with the serials is rejected. Only
+	outgoing rows (with a source warehouse) on tag-tracked items are handled.
+	"""
+	for idx, row in enumerate(doc.items, start=1):
+		if _is_incoming(row) or not row.get("custom_track_item_tags"):
+			continue
+
+		serial_nos = get_serial_nos(row.get("serial_no"))
+		if not serial_nos:
+			continue
+
+		expected = _serial_tags(serial_nos)
+		if not all(expected):
+			# No tags, or only some serials tagged — nothing to map 1:1 here.
+			continue
+
+		if not row.get("custom_item_tag"):
+			row.custom_item_tag = "\n".join(expected)
+			continue
+
+		item_tags = get_serial_nos(row.get("custom_item_tag"))
+		if item_tags != expected:
+			frappe.throw(_(
+				"Row {0}: Item Tags do not match the serial numbers. "
+				"Expected {1}, got {2}."
+			).format(idx, ", ".join(expected), ", ".join(item_tags)))
+
+
+@frappe.whitelist()
+def get_serial_tags(serial_nos_text):
+	"""Return the Item Tags of the given serial numbers, newline-separated, in order.
+
+	Used by the Stock Entry client script to pre-fill a row's Item Tag when serials
+	are entered on an issue/transfer.
+	"""
+	serial_nos = get_serial_nos(serial_nos_text)
+	if not serial_nos:
+		return ""
+	return "\n".join(_serial_tags(serial_nos))
+
+
+def _serial_tags(serial_nos):
+	"""Item Tag of each serial, aligned to the input order ("" when a serial has none)."""
+	tags = dict(frappe.get_all(
+		"Serial No",
+		filters={"name": ["in", serial_nos]},
+		fields=["name", "custom_item_tag"],
+		as_list=True,
+	))
+	return [tags.get(sn) or "" for sn in serial_nos]
+
+
 def _is_incoming(row):
 	"""A row that brings stock in — true unless it issues from a source warehouse."""
 	return not row.get("s_warehouse")

@@ -58,4 +58,11 @@ features:
     module: itag_stock
     title: Item-Tag Serial Tracking + Field Visibility
     status: done
-    components: 4
+    components: 5
+  - fid: f008
+    slug: collab-serial-ux-received-status
+    module: itag_manufacturing
+    title: Collaboration Serial UX + PO Received Status
+    status: done
+    depends_on: [f005, f007]
+    components: 3

@@ -12,26 +12,35 @@ def validate(doc, method=None):
 
 
 def recompute_collaboration_status(po_name):
-    new_status = _compute_status_from_issued(po_name)
+    new_status = _compute_status(po_name)
     frappe.db.set_value("Purchase Order", po_name, "custom_collaboration_status", new_status)
     return new_status
 
 
-def _compute_status_from_issued(po_name):
+def _compute_status(po_name):
     po_totals = _po_sub_item_totals(po_name)
     if not po_totals:
         return "Pending"
 
     issued = _issued_sub_item_totals(po_name)
-    total_issued = sum(issued.values())
-    if total_issued == 0:
+    if sum(issued.values()) == 0:
         return "Pending"
 
-    fully_covered = all(
+    # Returns take precedence: once any sub-item comes back from the supplier the PO
+    # is Received, measured against the same PO totals the issued status uses.
+    received = _received_sub_item_totals(po_name)
+    if sum(received.values()) > 0:
+        fully_received = all(
+            received.get(sub_item, 0) >= required_qty
+            for sub_item, required_qty in po_totals.items()
+        )
+        return "Fully Received" if fully_received else "Partially Received"
+
+    fully_issued = all(
         issued.get(sub_item, 0) >= required_qty
         for sub_item, required_qty in po_totals.items()
     )
-    return "Fully Issued" if fully_covered else "Partially Issued"
+    return "Fully Issued" if fully_issued else "Partially Issued"
 
 
 def _po_sub_item_totals(po_name):
@@ -57,6 +66,37 @@ def _issued_sub_item_totals(po_name):
         WHERE se.docstatus = 1
           AND se.custom_purchase_order = %(po)s
           AND se.custom_is_collaboration_delivery_note = 1
+        GROUP BY sed.item_code
+        """,
+        {"po": po_name},
+        as_dict=True,
+    )
+    return {r.sub_item: r.qty or 0 for r in rows}
+
+
+@frappe.whitelist()
+def is_fully_issued(po_name):
+    """True when every sub-item's issued qty covers the PO qty.
+
+    Drives the Material Issue guard/button independently of the display status, which
+    is no longer terminal once returns move it to a Received state.
+    """
+    po_totals = _po_sub_item_totals(po_name)
+    if not po_totals:
+        return False
+    issued = _issued_sub_item_totals(po_name)
+    return all(issued.get(sub_item, 0) >= required_qty for sub_item, required_qty in po_totals.items())
+
+
+def _received_sub_item_totals(po_name):
+    rows = frappe.db.sql(
+        """
+        SELECT sed.item_code AS sub_item, SUM(sed.qty) AS qty
+        FROM `tabStock Entry` se
+        JOIN `tabStock Entry Detail` sed ON sed.parent = se.name
+        WHERE se.docstatus = 1
+          AND se.custom_purchase_order = %(po)s
+          AND se.custom_is_collaboration_grn = 1
         GROUP BY sed.item_code
         """,
         {"po": po_name},
@@ -121,7 +161,7 @@ def _guard_make_material_issue(po_doc):
         frappe.throw(_("Material Issue is only available on collaboration service POs."))
     if po_doc.docstatus != 1:
         frappe.throw(_("Submit the Purchase Order before issuing material."))
-    if po_doc.custom_collaboration_status == "Fully Issued":
+    if is_fully_issued(po_doc.name):
         frappe.throw(_("All sub-items have been fully issued for this PO."))
     if not po_doc.custom_supplier_store:
         frappe.throw(_("Set the Supplier Store on the PO before issuing material."))

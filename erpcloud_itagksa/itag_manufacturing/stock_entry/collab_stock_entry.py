@@ -13,11 +13,11 @@ def validate(doc, method=None):
 
 
 def on_submit(doc, method=None):
-    _recompute_po_status_if_issue(doc)
+    _recompute_po_status(doc)
 
 
 def on_cancel(doc, method=None):
-    _recompute_po_status_if_issue(doc)
+    _recompute_po_status(doc)
 
 
 def _validate_mutual_exclusion(doc):
@@ -51,16 +51,12 @@ def _validate_receipt_cumulative_qty(doc):
             )
 
 
-def _recompute_po_status_if_issue(doc):
-    if not _is_issue_se(doc):
-        return
+def _recompute_po_status(doc):
     if not doc.custom_purchase_order:
         return
+    if not (doc.custom_is_collaboration_delivery_note or doc.custom_is_collaboration_grn):
+        return
     recompute_collaboration_status(doc.custom_purchase_order)
-
-
-def _is_issue_se(doc):
-    return bool(doc.custom_is_collaboration_delivery_note)
 
 
 def _get_validate_receipt_qty_setting():

@@ -262,6 +262,7 @@ doc_events = {
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.validate",
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.validate",
 			"erpcloud_itagksa.itag_stock.receipt_tag.validate_item_tags",
+			"erpcloud_itagksa.itag_stock.receipt_tag.sync_outgoing_item_tags",
 		],
 		"on_submit": [
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
@@ -320,6 +321,7 @@ doctype_js = {
 	"Stock Entry": [
 		"itag_manufacturing/stock_entry/stock_entry.js",
 		"itag_manufacturing/stock_entry/collab_stock_entry.js",
+		"itag_stock/stock_entry_tag.js",
 	],
 	"Job Card": "itag_manufacturing/job_card/job_card.js",
 	"Work Order": "itag_manufacturing/work_order/work_order.js",
