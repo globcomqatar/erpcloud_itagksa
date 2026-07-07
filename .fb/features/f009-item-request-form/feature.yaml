@@ -1,0 +1,47 @@
+fid: f009
+slug: item-request-form
+module: itag_stock
+title: Item Request Form + Approval
+description: >
+  A request-and-approve gate in front of Item master creation. Staff raise an Item
+  Request Form (short name, item group, detailed description, UOM, item type,
+  maintain-stock + has-serial-no flags); a Stock Manager approves it by submitting the
+  document, and the controller's on_submit creates the Item automatically. The item
+  code is left to the site's item naming rule (naming series) — the requester never
+  types one — and the created Item is linked back on the request for traceability.
+
+status_history: open --> working --> done
+created: 2026-07-07
+
+components:
+  - id: f009-c001
+    name: Item Request Form DocType
+    type: doctype
+    stage: done
+    status_history: open --> done
+    source: itag_stock/doctype/item_request_form/item_request_form.json
+    responsibility: >
+      New app-native submittable DocType (module ITAG Stock, autoname IRF-.YYYY.-.#####).
+      Fields: item_short_name (Data), item_group (Link Item Group), item_type (Select
+      Critical/Non-Critical/General, mirroring Item.custom_product_type), item_uom
+      (Link UOM), maintain_stock (Check, default 1), has_serial_no (Check),
+      item_description (Text Editor), read-only no_copy created_item (Link Item),
+      amended_from. Approval is native submit permission: Stock Manager gets
+      submit/cancel/amend; Stock User gets create/write/read without submit.
+
+  - id: f009-c002
+    name: on_submit Item creation
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    source: itag_stock/doctype/item_request_form/item_request_form.py
+    responsibility: >
+      ItemRequestForm(Document).on_submit delegates to _create_item, which maps the
+      request onto a new Item (item_short_name->item_code + item_name, item_group,
+      item_description->description, item_uom->stock_uom, maintain_stock->is_stock_item,
+      has_serial_no, item_type->custom_product_type). item_code is seeded from the short
+      name to satisfy the mandatory field; where the site has an item naming rule it
+      overrides that with the generated code, so the requester never enters one. Links
+      the new Item back via created_item and guards on it so re-running never mints a
+      duplicate. No hooks.py entry — the app owns the DocType, so the controller class
+      fires on_submit directly.

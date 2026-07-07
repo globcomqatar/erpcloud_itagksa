@@ -66,3 +66,9 @@ features:
     status: done
     depends_on: [f005, f007]
     components: 3
+  - fid: f009
+    slug: item-request-form
+    module: itag_stock
+    title: Item Request Form + Approval
+    status: done
+    components: 2

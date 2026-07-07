@@ -4,6 +4,9 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.6.0 — 2026-07-07
+- Add an **Item Request Form**: staff raise a request for a new item (short name, item group, description, UOM, item type, maintain-stock and has-serial-no flags). A Stock Manager approves it by submitting, and the Item record is created automatically on submit. The item code is assigned by the site's item naming rule — the requester never types one. The created Item is linked back on the request for traceability.
+
 ### 15.5.1 — 2026-07-07
 - On material issues and transfers, fill each row's Item Tag from its serial numbers automatically, and block saving if a typed tag does not match the serial.
 - Rename the Item "Track Item Tags" checkbox to "Has Item Tag".
