@@ -14,6 +14,7 @@
   "item_uom",
   "maintain_stock",
   "has_serial_no",
+  "has_tag",
   "description_section",
   "item_description",
   "created_item_section",
@@ -40,7 +41,8 @@
    "fieldname": "item_type",
    "fieldtype": "Select",
    "label": "Item Type",
-   "options": "\nCritical\nNon-Critical\nGeneral"
+   "options": "\nCritical\nNon-Critical\nGeneral",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_main",
@@ -63,6 +65,11 @@
    "fieldname": "has_serial_no",
    "fieldtype": "Check",
    "label": "Has Serial No?"
+  },
+  {
+   "fieldname": "has_tag",
+   "fieldtype": "Check",
+   "label": "Has Tag"
   },
   {
    "fieldname": "description_section",
@@ -131,6 +138,62 @@
    "report": 1,
    "role": "Stock User",
    "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manufacturing User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Projects User",
+   "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

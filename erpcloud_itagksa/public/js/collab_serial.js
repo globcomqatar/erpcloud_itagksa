@@ -2,20 +2,6 @@ frappe.provide("frappe.itagksa");
 
 const DELIVERED_STATUS = "Delivered";
 
-// Show the serial's Item Tag inline ("SN: Tag") in the collab Serial No link fields.
-// Reads the read-only custom_serial_no_tag fetch field on the row; scoped to the two
-// collab child tables so Serial No links elsewhere are untouched.
-frappe.form.link_formatters["Serial No"] = function (value, doc) {
-    if (
-        doc &&
-        doc.custom_serial_no_tag &&
-        ["Material Request Item", "Purchase Order Item"].includes(doc.doctype)
-    ) {
-        return `${value}: ${doc.custom_serial_no_tag}`;
-    }
-    return value;
-};
-
 // Restrict the row's Serial No link to serials of the selected Calibration Item,
 // and hide serials already delivered out.
 frappe.itagksa.set_collab_serial_query = function (frm) {

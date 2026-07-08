@@ -66,3 +66,17 @@ components:
       Relabel custom_inward_inspection_required to "Quality Verification
       Required", description "Only for customer property items". Fieldname
       unchanged (no data impact, doc_events/JS refs preserved).
+
+  - id: f003-c005
+    name: Default Supplier Store setting + MR/PO prefill
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    created: 2026-07-08
+    source: itag_manufacturing/doctype/itag_ksa_settings/ + itag_manufacturing/utils/supplier_store.py + material_request/material_request.py + purchase_order/purchase_order.py
+    responsibility: >
+      New default_supplier_store (Link -> Warehouse) on ITAG KSA Settings.
+      apply_default_supplier_store(doc) prefills custom_supplier_store from it on new
+      Material Requests and Purchase Orders — only when is_new() and the field is empty,
+      so a manual pick is never overwritten. Called at the top of both the MR and PO
+      validate handlers (itag_manufacturing), ahead of the collaboration early-return.

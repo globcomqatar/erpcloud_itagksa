@@ -4,6 +4,13 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.7.0 — 2026-07-08
+- Item Request Form: Item Type is now required, add a "Has Tag" checkbox, and let stock, purchase, sales, manufacturing, accounts and projects staff create and submit requests.
+- Add a Default Supplier Store setting that prefills the Supplier Store on new Material Requests and Purchase Orders.
+- On calibration Material Requests, show the serial's Item Tag as its own column before the serial field, and make the Calibration Item Description editable.
+- Rename "Calibration Item" to "Calibration Item code" on Material Requests and Purchase Orders.
+- Drop the inline serial-tag text in the serial picker (it wasn't working) and name that field simply "Serial No".
+
 ### 15.6.0 — 2026-07-07
 - Add an **Item Request Form**: staff raise a request for a new item (short name, item group, description, UOM, item type, maintain-stock and has-serial-no flags). A Stock Manager approves it by submitting, and the Item record is created automatically on submit. The item code is assigned by the site's item naming rule — the requester never types one. The created Item is linked back on the request for traceability.
 

@@ -8,6 +8,7 @@
   "goods_receipt_note_section",
   "default_target_warehouse",
   "supplier_section",
+  "default_supplier_store",
   "reevaluation_role"
  ],
  "fields": [
@@ -27,6 +28,13 @@
    "fieldname": "supplier_section",
    "fieldtype": "Section Break",
    "label": "Supplier"
+  },
+  {
+   "description": "Default Supplier Store (warehouse) prefilled on new Material Requests and Purchase Orders.",
+   "fieldname": "default_supplier_store",
+   "fieldtype": "Link",
+   "label": "Default Supplier Store",
+   "options": "Warehouse"
   },
   {
    "fieldname": "reevaluation_role",

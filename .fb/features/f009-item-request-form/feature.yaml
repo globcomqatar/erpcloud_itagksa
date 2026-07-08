@@ -45,3 +45,18 @@ components:
       the new Item back via created_item and guards on it so re-running never mints a
       duplicate. No hooks.py entry — the app owns the DocType, so the controller class
       fires on_submit directly.
+
+  - id: f009-c003
+    name: Field + permission update (mandatory type, Has Tag, module users)
+    type: doctype
+    stage: done
+    status_history: open --> working --> done
+    created: 2026-07-08
+    source: itag_stock/doctype/item_request_form/item_request_form.json
+    responsibility: >
+      Second pass on the DocType. item_type is now mandatory (reqd). New has_tag
+      (Check, "Has Tag") after has_serial_no. Widen access beyond Stock: add
+      create/read/write/submit for Purchase User, Sales User, Manufacturing User,
+      Accounts User, Projects User, and add submit to the existing Stock User — every
+      module's operational user can raise and submit an item request. Stock Manager
+      keeps cancel/amend/delete.
