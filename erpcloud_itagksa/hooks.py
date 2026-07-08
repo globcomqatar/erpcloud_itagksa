@@ -308,11 +308,18 @@ doc_events = {
 	"Supplier": {
 		"validate": "erpcloud_itagksa.itag_ksa_buying.supplier.supplier.validate",
 	},
+	"Serial No": {
+		"after_insert": "erpcloud_itagksa.itag_quality.serial_no.serial_no.after_insert",
+	},
+	"Serial and Batch Bundle": {
+		"on_submit": "erpcloud_itagksa.itag_quality.serial_and_batch_bundle.on_submit",
+	},
 }
 
 scheduler_events = {
 	"daily": [
 		"erpcloud_itagksa.itag_ksa_buying.tasks.freeze_lapsed_suppliers",
+		"erpcloud_itagksa.itag_quality.tasks.create_calibration_tasks",
 	],
 }
 

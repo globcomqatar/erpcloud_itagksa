@@ -75,3 +75,18 @@ components:
       Relabel custom_sub_item "Calibration Item" -> "Calibration Item code" on MR Item
       + PO Item. The old hidden custom_serial_no_tag fetch field is now unused (left in
       place, not deleted).
+
+  - id: f008-c005
+    name: Calibration Item description auto-fill + read-only
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-08
+    source: public/js/collab_serial.js + fixtures/custom_field.json
+    responsibility: >
+      When a picked serial fills the Calibration Item on an MR row, on_collab_serial_set
+      now also fetches that item's description into custom_sub_item_description. The
+      field's fetch_from does not cascade off the programmatic custom_sub_item set, so
+      the description otherwise only appeared server-side on save. Reverts the c004
+      editable change: MR Item custom_sub_item_description is read-only again, matching
+      PO Item.

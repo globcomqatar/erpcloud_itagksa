@@ -1,0 +1,101 @@
+fid: f010
+slug: calibration-schedule
+module: itag_quality
+title: Tag-Based Calibration Schedule + Tasks
+depends_on: [f007]
+description: >
+  Per-serial calibration lifecycle. An Item is flagged as a calibration item and
+  given a frequency (Weekly / Monthly / Quarterly / Half-Yearly / Yearly) and a
+  number of cycles. When a Serial No is created for such an item, a Calibration
+  Schedule child-table row is generated on the serial for each cycle with a
+  stepped due date — so the schedule is visible directly on the Serial No form. A
+  daily scheduler raises a Task for every schedule that has come due, titled
+  "Calibration for <item>" with the due date as its start date, and marks the row.
+  A standard report lists the schedule per serial.
+
+status_history: open --> working --> done
+created: 2026-07-08
+
+components:
+  - id: f010-c001
+    name: Item calibration fields
+    type: fixture
+    stage: done
+    status_history: open --> done
+    source: fixtures/custom_field.json
+    responsibility: >
+      Three custom fields on Item (module ITAG Quality): custom_is_calibration_item
+      (Check, after has_serial_no), custom_calibration_frequency (Select Weekly/
+      Monthly/Quarterly/Half-Yearly/Yearly) and custom_no_of_calibrations (Int),
+      both shown + mandatory when the calibration flag is set.
+
+  - id: f010-c002
+    name: Calibration Schedule child table
+    type: doctype
+    stage: done
+    status_history: open --> done
+    source: itag_quality/doctype/calibration_schedule/
+    responsibility: >
+      App-native child DocType (istable, module ITAG Quality). One row per cycle:
+      sequence, frequency snapshot, due_date, status (Pending/Task Created/Completed),
+      read-only calibration_task (Link Task). Serial/item context comes from the
+      parent Serial No, so the table carries no serial_no/item_code columns. Empty
+      controller — generation and task-raising live in module handlers.
+
+  - id: f010-c003
+    name: Serial schedule generation
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f010-c001, f010-c002]
+    source: itag_quality/serial_no/serial_no.py, itag_quality/serial_and_batch_bundle.py
+    responsibility: >
+      generate_calibration_schedule(serial_no, item_code): for a serial whose Item
+      is a calibration item, load the Serial No and append one calibration row per
+      cycle to its custom_calibration_schedule child table, due date = today stepped
+      forward by the Item frequency, then save. Idempotent (skips if the table is
+      already populated). Two triggers, because v15 bulk-inserts stock-transaction
+      serials (no Serial No ORM hooks): Serial and Batch Bundle on_submit for inward
+      bundles (the reliable path for receipts / stock entries), plus Serial No
+      after_insert for manually-entered serials.
+
+  - id: f010-c006
+    name: Serial No calibration table field
+    type: fixture
+    stage: done
+    status_history: open --> done
+    depends_on: [f010-c002]
+    source: fixtures/custom_field.json
+    responsibility: >
+      custom_calibration_schedule — a read-only Table custom field on Serial No
+      (module ITAG Quality, options Calibration Schedule, after custom_item_tag) that
+      surfaces the generated schedule inline on the Serial No form.
+
+  - id: f010-c004
+    name: Daily calibration Task scheduler
+    type: controller
+    stage: done
+    status_history: open --> working --> done
+    depends_on: [f010-c002]
+    source: itag_quality/tasks.py
+    responsibility: >
+      Daily scheduler create_calibration_tasks: for each Pending Calibration Schedule
+      child row (parenttype Serial No) due today or earlier with no Task, create a
+      Task (subject "Calibration for <item>", exp_start_date = due_date,
+      serial/tag/cycle in the description), link it back and set status Task Created.
+      Serial/item/tag come from the parent Serial No + its Item. ignore_permissions +
+      explicit commit; idempotent via the unset-task filter. Wired via
+      scheduler_events daily.
+
+  - id: f010-c005
+    name: Calibration Schedule Per Serial No report
+    type: report
+    stage: done
+    status_history: open --> done
+    depends_on: [f010-c002]
+    source: itag_quality/report/calibration_schedule_per_serial_no/
+    responsibility: >
+      Standard Query Report listing every serial's calibration cycles ordered by
+      serial then due date, joining the Calibration Schedule child rows to their
+      parent Serial No (for item_code + Item Tag) and Item (for item_name). Visible
+      to Stock Manager, Stock User, Quality Manager.

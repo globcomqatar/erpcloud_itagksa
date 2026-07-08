@@ -65,10 +65,17 @@ features:
     title: Collaboration Serial UX + PO Received Status
     status: done
     depends_on: [f005, f007]
-    components: 3
+    components: 5
   - fid: f009
     slug: item-request-form
     module: itag_stock
     title: Item Request Form + Approval
     status: done
     components: 2
+  - fid: f010
+    slug: calibration-schedule
+    module: itag_quality
+    title: Tag-Based Calibration Schedule + Tasks
+    status: done
+    depends_on: [f007]
+    components: 6

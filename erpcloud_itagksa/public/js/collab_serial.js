@@ -24,8 +24,17 @@ frappe.itagksa.on_collab_serial_set = function (frm, cdt, cdn) {
 
     frappe.db.get_value("Serial No", row.custom_serial_no, "item_code").then((r) => {
         const serial_item = r.message && r.message.item_code;
-        if (serial_item) {
-            frappe.model.set_value(cdt, cdn, "custom_sub_item", serial_item);
-        }
+        if (!serial_item) return;
+
+        frappe.model.set_value(cdt, cdn, "custom_sub_item", serial_item);
+
+        // custom_sub_item_description fetch_from does not cascade off this
+        // programmatic set (only server-side on save), so fill it here too.
+        frappe.db.get_value("Item", serial_item, "description").then((d) => {
+            const description = d.message && d.message.description;
+            if (description) {
+                frappe.model.set_value(cdt, cdn, "custom_sub_item_description", description);
+            }
+        });
     });
 };

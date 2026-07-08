@@ -4,6 +4,14 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.8.0 — 2026-07-08
+- Add tag-based calibration scheduling: mark an item as a calibration item and set how often and how many times each serial must be calibrated.
+- When a serial number is created for such an item — by hand or from a stock receipt — its calibration schedule is generated automatically for every cycle.
+- The Serial No screen now shows its calibration schedule directly on the form.
+- On calibration Material Requests, the Calibration Item description now fills as soon as a serial is picked (not only on save) and is read-only.
+- Each day, once a scheduled calibration falls due, a Task is raised automatically — titled "Calibration for <item>" with the due date as its start date.
+- Add a "Calibration Schedule Per Serial No" report listing every serial's calibration cycles, due dates and status.
+
 ### 15.7.0 — 2026-07-08
 - Item Request Form: Item Type is now required, add a "Has Tag" checkbox, and let stock, purchase, sales, manufacturing, accounts and projects staff create and submit requests.
 - Add a Default Supplier Store setting that prefills the Supplier Store on new Material Requests and Purchase Orders.
