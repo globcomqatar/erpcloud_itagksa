@@ -4,6 +4,11 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.9.0 — 2026-07-09
+- Move calibration onto the standard Maintenance Schedule: pick an item and its serial, set frequency and number of visits, and generate the schedule there.
+- Auto-fill the serial's Item Tag on each Maintenance Schedule line and restrict the serial to the chosen item.
+- Retire the previous approach — no more calibration schedule on the Serial No form, no auto-generation on receipt, no daily calibration Task, and the calibration report is removed.
+
 ### 15.8.0 — 2026-07-08
 - Add tag-based calibration scheduling: mark an item as a calibration item and set how often and how many times each serial must be calibrated.
 - When a serial number is created for such an item — by hand or from a stock receipt — its calibration schedule is generated automatically for every cycle.

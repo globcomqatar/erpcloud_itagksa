@@ -75,7 +75,7 @@ features:
   - fid: f010
     slug: calibration-schedule
     module: itag_quality
-    title: Tag-Based Calibration Schedule + Tasks
+    title: Calibration via Maintenance Schedule
     status: done
     depends_on: [f007]
-    components: 6
+    components: 2

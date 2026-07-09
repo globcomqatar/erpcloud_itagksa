@@ -308,18 +308,14 @@ doc_events = {
 	"Supplier": {
 		"validate": "erpcloud_itagksa.itag_ksa_buying.supplier.supplier.validate",
 	},
-	"Serial No": {
-		"after_insert": "erpcloud_itagksa.itag_quality.serial_no.serial_no.after_insert",
-	},
-	"Serial and Batch Bundle": {
-		"on_submit": "erpcloud_itagksa.itag_quality.serial_and_batch_bundle.on_submit",
+	"Maintenance Schedule": {
+		"before_validate": "erpcloud_itagksa.itag_quality.maintenance_schedule.maintenance_schedule.before_validate",
 	},
 }
 
 scheduler_events = {
 	"daily": [
 		"erpcloud_itagksa.itag_ksa_buying.tasks.freeze_lapsed_suppliers",
-		"erpcloud_itagksa.itag_quality.tasks.create_calibration_tasks",
 	],
 }
 
@@ -335,6 +331,7 @@ doctype_js = {
 	"Purchase Order": "itag_manufacturing/purchase_order/purchase_order.js",
 	"Material Request": "itag_manufacturing/material_request/material_request.js",
 	"Supplier": "itag_ksa_buying/supplier/supplier.js",
+	"Maintenance Schedule": "itag_quality/maintenance_schedule/maintenance_schedule.js",
 }
 
 override_doctype_dashboards = {
