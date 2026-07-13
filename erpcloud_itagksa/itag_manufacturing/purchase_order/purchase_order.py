@@ -8,9 +8,29 @@ from erpcloud_itagksa.itag_manufacturing.utils.supplier_store import apply_defau
 
 def validate(doc, method=None):
     apply_default_supplier_store(doc)
+    apply_cash_supplier_from_mr(doc)
     if not doc.custom_is_collaboration_service_po:
         return
     validate_serial_no_items(doc, _("Collaboration PO validation"))
+
+
+def apply_cash_supplier_from_mr(doc):
+    """Default the supplier to the Cash Supplier when this PO is raised from a
+    cash-purchase Material Request, so the buyer need not select it. A supplier
+    the user has already chosen is never overwritten."""
+    if doc.supplier:
+        return
+    source_mrs = {row.material_request for row in doc.items if row.get("material_request")}
+    for mr in source_mrs:
+        cash = frappe.db.get_value(
+            "Material Request",
+            mr,
+            ["custom_cash_purchase_request", "custom_cash_supplier"],
+            as_dict=True,
+        )
+        if cash and cash.custom_cash_purchase_request and cash.custom_cash_supplier:
+            doc.supplier = cash.custom_cash_supplier
+            return
 
 
 def recompute_collaboration_status(po_name):

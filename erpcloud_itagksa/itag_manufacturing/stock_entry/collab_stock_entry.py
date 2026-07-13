@@ -130,6 +130,8 @@ def _build_se_items_from_po(po_doc, target_warehouse):
             "stock_uom": stock_uom,
             "conversion_factor": 1,
             "description": row.custom_sub_item_description or item_description,
+            "custom_calibration_visit": row.get("custom_calibration_visit"),
+            "custom_calibration_schedule": row.get("custom_calibration_schedule"),
         })
     return rows
 

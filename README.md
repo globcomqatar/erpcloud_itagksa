@@ -4,6 +4,21 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.11.0 — 2026-07-13
+- Item Request Form: flag an item as customer-provided and pick the customer, and mark whether it carries a tag; these carry over to the item that gets created.
+- Material Request: mark a request as a cash purchase and choose its cash supplier; a purchase order raised from it is set to that supplier automatically.
+- Purchase Receipt: record the actual cash vendor's name, shown only when the supplier is the cash supplier.
+- Supplier Store now prefills the moment a calibration request/order is opened, not only after the first save.
+- Creating a Material Request from a Calibration Schedule now asks which specific visits it covers, instead of dumping every item.
+- Calibration visits are tracked end to end: a visit is marked completed and stamped with the return date once the equipment comes back from the supplier, and the schedule shows a running "done / total" progress tally.
+
+### 15.10.0 — 2026-07-09
+- Move calibration onto a dedicated Calibration Schedule document instead of the standard Maintenance Schedule: pick an item and its serial, set frequency and number of calibrations, and generate the calibration dates. It carries an Employee rather than a Sales Person, and drops the customer and contact details.
+- Flag an item as a calibration item and set how often and how many times its serials must be calibrated; when such a serial is received or created, its Calibration Schedule is raised automatically.
+- A Calibration Schedule raised from a stock receipt now links back to the Stock Entry or Purchase Receipt it came from, and shows up in that document's Connections tab.
+- After a calibration schedule is submitted you can still adjust its visits — reschedule a date or mark one Skipped — without cancelling the document.
+- Add a Create → Material Request button on a submitted calibration schedule: it opens a new calibration-service Material Request pre-filled with each calibration item and serial, ready for the operator to add the main stock item, quantity and warehouse.
+
 ### 15.9.0 — 2026-07-09
 - Move calibration onto the standard Maintenance Schedule: pick an item and its serial, set frequency and number of visits, and generate the schedule there.
 - Auto-fill the serial's Item Tag on each Maintenance Schedule line and restrict the serial to the chosen item.

@@ -1,0 +1,177 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-09 09:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "transaction_date",
+  "column_break_hdr",
+  "status",
+  "calibration_progress",
+  "company",
+  "source_document_type",
+  "source_document",
+  "items_section",
+  "items",
+  "generate_schedule",
+  "schedules_section",
+  "schedules",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "CAL-SCH-.YYYY.-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CAL-SCH-.YYYY.-",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Transaction Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_hdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "\nDraft\nSubmitted\nCancelled",
+   "read_only": 1
+  },
+  {
+   "description": "Completed calibration visits out of the total scheduled.",
+   "fieldname": "calibration_progress",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Calibration Progress",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source_document_type",
+   "fieldtype": "Link",
+   "label": "Source Document Type",
+   "no_copy": 1,
+   "options": "DocType",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Source Document",
+   "no_copy": 1,
+   "options": "source_document_type",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Calibration Schedule Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "generate_schedule",
+   "fieldtype": "Button",
+   "label": "Generate Schedule"
+  },
+  {
+   "fieldname": "schedules_section",
+   "fieldtype": "Section Break",
+   "label": "Schedules"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "schedules",
+   "fieldtype": "Table",
+   "label": "Schedules",
+   "options": "Calibration Schedule Detail"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Calibration Schedule",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-07-09 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ITAG Quality",
+ "name": "Calibration Schedule",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Quality Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Quality User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Stock User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

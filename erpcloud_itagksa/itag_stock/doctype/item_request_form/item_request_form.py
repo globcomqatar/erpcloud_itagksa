@@ -22,7 +22,13 @@ class ItemRequestForm(Document):
 		item.stock_uom = self.item_uom
 		item.is_stock_item = self.maintain_stock
 		item.has_serial_no = self.has_serial_no
+		item.custom_track_item_tags = self.has_tag
 		item.custom_product_type = self.item_type
+		item.is_customer_provided_item = self.is_customer_provided_item
+		item.customer = self.customer
+		if self.is_customer_provided_item:
+			# ERPNext forbids a customer-provided item from also being a purchase item.
+			item.is_purchase_item = 0
 		item.insert(ignore_permissions=True)
 
 		self.db_set("created_item", item.name)

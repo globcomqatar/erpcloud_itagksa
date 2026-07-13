@@ -86,7 +86,7 @@ app_include_js = "/assets/erpcloud_itagksa/js/collab_serial.js"
 # ------------
 
 before_install = "erpcloud_itagksa.install.before_install"
-# after_install = "erpcloud_itagksa.install.after_install"
+after_install = "erpcloud_itagksa.install.after_install"
 
 # Uninstallation
 # ------------
@@ -268,10 +268,12 @@ doc_events = {
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_submit",
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.on_submit",
 			"erpcloud_itagksa.itag_stock.receipt_tag.bind_item_tags",
+			"erpcloud_itagksa.itag_quality.calibration.stock_entry_on_submit",
 		],
 		"on_cancel": [
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.on_cancel",
+			"erpcloud_itagksa.itag_quality.calibration.stock_entry_on_cancel",
 		],
 	},
 	"BOM": {
@@ -308,8 +310,11 @@ doc_events = {
 	"Supplier": {
 		"validate": "erpcloud_itagksa.itag_ksa_buying.supplier.supplier.validate",
 	},
-	"Maintenance Schedule": {
-		"before_validate": "erpcloud_itagksa.itag_quality.maintenance_schedule.maintenance_schedule.before_validate",
+	"Serial No": {
+		"after_insert": "erpcloud_itagksa.itag_quality.calibration.serial_no_after_insert",
+	},
+	"Serial and Batch Bundle": {
+		"on_submit": "erpcloud_itagksa.itag_quality.calibration.bundle_on_submit",
 	},
 }
 
@@ -331,11 +336,12 @@ doctype_js = {
 	"Purchase Order": "itag_manufacturing/purchase_order/purchase_order.js",
 	"Material Request": "itag_manufacturing/material_request/material_request.js",
 	"Supplier": "itag_ksa_buying/supplier/supplier.js",
-	"Maintenance Schedule": "itag_quality/maintenance_schedule/maintenance_schedule.js",
 }
 
 override_doctype_dashboards = {
 	"Sales Order": "erpcloud_itagksa.itag_manufacturing.sales_order.sales_order_dashboard.get_dashboard_data",
+	"Stock Entry": "erpcloud_itagksa.itag_quality.calibration_dashboard.stock_entry",
+	"Purchase Receipt": "erpcloud_itagksa.itag_quality.calibration_dashboard.purchase_receipt",
 }
 
 fixtures = [

@@ -15,6 +15,8 @@
   "maintain_stock",
   "has_serial_no",
   "has_tag",
+  "is_customer_provided_item",
+  "customer",
   "description_section",
   "item_description",
   "created_item_section",
@@ -70,6 +72,20 @@
    "fieldname": "has_tag",
    "fieldtype": "Check",
    "label": "Has Tag"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_customer_provided_item",
+   "fieldtype": "Check",
+   "label": "Is Customer Provided Item"
+  },
+  {
+   "depends_on": "eval:doc.is_customer_provided_item",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "mandatory_depends_on": "eval:doc.is_customer_provided_item",
+   "options": "Customer"
   },
   {
    "fieldname": "description_section",

@@ -10,7 +10,7 @@ Unified ITAG KSA app. Manufacturing + quality customization migrated from
 
 Every push to GitHub MUST first include both of these, in the same commit/PR:
 
-1. **Version bump** in `erpcloud_itagksa/__init__.py` (`__version__`, currently `0.0.1`).
+1. **Version bump** in `erpcloud_itagksa/__init__.py` (`__version__`, currently `15.11.0`).
 2. **Changelog entry** in `README.md` under `## Changelog` — new version, date, summary of changes.
 
 No push without both. A code change with no version bump and no changelog entry is incomplete.
@@ -45,8 +45,16 @@ No push without both. A code change with no version bump and no changelog entry 
   quality flag. Handlers: `quality_inspection/`, `acceptance_criteria/`, `material_request/`.
 - **Custom DocType:** `Production Settings` (Single) is owned by module ITAG Manufacturing.
 - Custom fields / property setters ship as **fixtures** (`fixtures/custom_field.json`,
-  `property_setter.json`), filtered by `module in ["ITAG Manufacturing", "ITAG Quality"]`
-  (58 fields). Stock Entry Types "Material Receipt - CPI" / "Material Return - CPI" ship too.
+  `property_setter.json`), filtered by `module in ["ITAG Manufacturing", "ITAG Quality",
+  "ITAG Stock", "Itag Ksa Buying"]`. Stock Entry Types ship too.
+- **Never `bench export-fixtures` to add a custom field.** Export re-snapshots the whole
+  DB for those modules — it pulls in any drift field the DB has but the fixture doesn't,
+  and re-serializes/re-timestamps every entry, producing a huge noisy diff. Instead
+  **hand-append the new field object(s)** to `custom_field.json` (set `module`,
+  `is_system_generated: 1`, and a `name` of `"<DocType>-<fieldname>"`), then `bench migrate`.
+- **Master records are not fixtures.** A Supplier fixture would upsert and overwrite a
+  live record's real data. The `Cash Supplier` master (default on cash-purchase Material
+  Requests) is seeded create-if-missing by `install.after_install → ensure_cash_supplier`.
 - Client scripts in `itag_manufacturing/<doctype>/<doctype>.js`, wired via `doctype_js`
   in `hooks.py` (Sales Order, Stock Entry, Job Card, Work Order).
 

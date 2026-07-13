@@ -1,46 +1,100 @@
 fid: f010
 slug: calibration-schedule
 module: itag_quality
-title: Calibration via Maintenance Schedule
+title: Calibration via custom Calibration Schedule
 depends_on: [f007]
 description: >
-  Calibration runs on ERPNext's standard Maintenance Schedule. A user picks the item
-  and its serial on a Maintenance Schedule line, sets periodicity (Weekly / Monthly /
-  Quarterly / Half Yearly / Yearly) and number of visits, and the native Generate
-  Schedule fans out the calibration dates into the schedules table. This app adds only
-  the serial + its Item Tag to the line, and carries the chosen serial onto each
-  generated schedule row. Due calibrations surface through the native Maintenance
-  Visit / calendar flow — no custom doctype, scheduler or report.
+  Calibration runs on a dedicated Calibration Schedule document owned by this app,
+  replacing ERPNext's standard Maintenance Schedule. A user picks the item and its
+  serial on a line, sets periodicity (Weekly / Monthly / Quarterly / Half Yearly /
+  Yearly) and number of calibrations, and Generate Schedule fans the calibration
+  dates into the schedules table. Each line carries an Employee (not a Sales Person);
+  customer, contact, territory and sales-order fields are dropped.
 
-  Supersedes the original per-serial approach (calibration schedule embedded on the
-  Serial No form, auto-generated on receipt, with a daily Task scheduler and a report),
-  which was removed in 15.9.0.
+  Items can be flagged as calibration items (with a periodicity and calibration count);
+  when a serial of such an item is created — manually or from a stock receipt — its
+  Calibration Schedule is raised automatically. A schedule raised from a receipt links
+  back to its Stock Entry / Purchase Receipt and appears in that voucher's Connections tab.
 
-status_history: open --> working --> done --> reworked --> done
+  After submission the schedules table stays editable so a visit can be rescheduled or
+  marked Skipped without cancelling. A Create Material Request button on a submitted
+  schedule opens an unsaved calibration-service Material Request pre-filled with each
+  calibration item + serial (main stock item added by the operator; no automation).
+
+  Supersedes the 15.9.0 approach that rode on the standard Maintenance Schedule, which
+  in turn superseded the original per-serial approach (calibration schedule on the
+  Serial No form, daily Task scheduler and report) removed in 15.9.0.
+
+status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done
 created: 2026-07-08
 
 components:
   - id: f010-c001
-    name: Maintenance Schedule serial + tag fields
-    type: fixture
+    name: Calibration Schedule doctype
+    type: doctype
     stage: done
     status_history: open --> done
-    source: fixtures/custom_field.json
+    source: itag_quality/doctype/calibration_schedule, itag_quality/doctype/calibration_schedule_item, itag_quality/doctype/calibration_schedule_detail
     responsibility: >
-      Two custom fields on Maintenance Schedule Item (module ITAG Quality, in list
-      view): custom_serial_no (Link -> Serial No, after item_name) so a user picks a
-      single serial per line, and custom_item_tag (Data, read-only,
-      fetch_from custom_serial_no.custom_item_tag).
+      Submittable Calibration Schedule (module ITAG Quality) with Calibration Schedule
+      Item and Calibration Schedule Detail child tables. Item line: item_code, serial_no
+      (Link -> Serial No, single calibration serial), item_tag (fetch from serial),
+      start/end date, periodicity, no_of_visits, employee (Link -> Employee). Detail
+      row: item, serial, scheduled_date, actual_date, completion_status, employee.
+      No customer/contact/territory/sales-order fields.
 
   - id: f010-c002
-    name: Carry serial into schedule rows
+    name: Schedule generation controller
     type: controller
     stage: done
     status_history: open --> done
     depends_on: [f010-c001]
-    source: itag_quality/maintenance_schedule/maintenance_schedule.py, itag_quality/maintenance_schedule/maintenance_schedule.js
+    source: itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js
     responsibility: >
-      before_validate mirrors each line's custom_serial_no into the native serial_no
-      field, so ERPNext's generate_schedule stamps the serial onto every generated
-      schedule row. Client set_query restricts custom_serial_no to serials of the
-      row's item_code. Wired via doc_events (before_validate) + doctype_js.
+      CalibrationSchedule controller ports generate_schedule + end-date/periodicity
+      validation from ERPNext's Maintenance Schedule, stripped of customer/sales/AMC/
+      event/serial-bundle logic. Fans periodicity x no_of_visits into schedules, stamps
+      serial + employee onto each row, avoids holiday-list dates (from the employee, or
+      company default). end_date left blank is filled before generation. Client
+      set_query restricts serial_no to the row's item_code; Generate Schedule button.
+
+  - id: f010-c003
+    name: Auto-raise schedule on receipt
+    type: controller
+    stage: done
+    status_history: open --> done
+    depends_on: [f010-c001]
+    source: itag_quality/calibration.py, itag_quality/calibration_dashboard.py, fixtures/custom_field.json
+    responsibility: >
+      Item markers (custom_is_calibration_item, custom_calibration_frequency using the
+      periodicity options, custom_no_of_calibrations). Serial No after_insert and inward
+      Serial and Batch Bundle on_submit call create_calibration_schedule, which raises
+      one Calibration Schedule per calibration serial. Idempotent on the line serial_no;
+      covers every inward voucher via the universal Serial and Batch Bundle carrier.
+      Receipt-raised schedules store the source voucher (source_document_type +
+      source_document Dynamic Link, mirroring the bundle's voucher_type / voucher_no);
+      override_doctype_dashboards wires Calibration Schedule into the Stock Entry and
+      Purchase Receipt Connections tabs via that dynamic link.
+
+  - id: f010-c004
+    name: Post-submit edit + Material Request handoff
+    type: controller
+    stage: done
+    status_history: open --> done --> extended --> done
+    depends_on: [f010-c001, f010-c002]
+    source: itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js, itag_quality/doctype/calibration_schedule_detail/calibration_schedule_detail.json, fixtures/custom_field.json
+    responsibility: >
+      Schedules Detail table is allow_on_submit with editable scheduled_date /
+      actual_date / completion_status (adds a "Skipped" status) so a submitted
+      schedule's visits can be delayed or skipped in place. validate() item
+      recompute + generate_schedule and on_update's Draft stamp are guarded to
+      docstatus == 0 so post-submit saves don't throw UpdateAfterSubmitError or
+      flip status back to Draft. make_material_request (whitelisted) builds an
+      unsaved calibration-service Material Request (custom_is_collaboration_service_po,
+      type Purchase) with one row per calibration item/serial forwarded to
+      custom_sub_item + custom_serial_no; the operator adds the main stock item.
+      Client Create > Material Request button via frappe.model.open_mapped_doc. No
+      auto-creation of Material Requests anywhere. Each MR item row carries its
+      visit's calibration date (custom_calibration_date on Material Request Item);
+      the MR header custom_calibration_date is set when all chosen visits share one
+      date, else left blank with an orange notice pointing to the per-row dates.
