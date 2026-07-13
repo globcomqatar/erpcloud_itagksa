@@ -58,7 +58,18 @@ def sync_outgoing_item_tags(doc, method=None):
 	outgoing rows (with a source warehouse) on tag-tracked items are handled.
 	"""
 	for idx, row in enumerate(doc.items, start=1):
-		if _is_incoming(row) or not row.get("custom_track_item_tags"):
+		if _is_incoming(row):
+			continue
+
+		# custom_track_item_tags is a client fetch_from the Item, so it is blank on any
+		# row not typed in the UI — rows built by a mapper or server API (Material Issue
+		# button, pull-from-PO, Sales Order -> Stock Entry, imports). Resolve it from the
+		# Item so the tag fill runs for every outgoing row, not just hand-entered ones.
+		if not row.get("custom_track_item_tags"):
+			row.custom_track_item_tags = frappe.db.get_value(
+				"Item", row.item_code, "custom_track_item_tags"
+			)
+		if not row.get("custom_track_item_tags"):
 			continue
 
 		serial_nos = get_serial_nos(row.get("serial_no"))

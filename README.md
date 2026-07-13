@@ -4,6 +4,9 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.11.1 — 2026-07-13
+- Issuing serialized items to a supplier now fills the item tag automatically from the serial numbers on save, for every stock entry — not only when serials are typed in by hand.
+
 ### 15.11.0 — 2026-07-13
 - Item Request Form: flag an item as customer-provided and pick the customer, and mark whether it carries a tag; these carry over to the item that gets created.
 - Material Request: mark a request as a cash purchase and choose its cash supplier; a purchase order raised from it is set to that supplier automatically.

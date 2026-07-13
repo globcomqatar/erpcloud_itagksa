@@ -77,7 +77,7 @@ components:
     name: Outgoing tag fetch + validate
     type: controller
     stage: done
-    status_history: open --> done
+    status_history: open --> done --> working --> done
     depends_on: [f007-c002]
     source: itag_stock/receipt_tag.py + itag_stock/stock_entry_tag.js
     responsibility: >
@@ -86,3 +86,9 @@ components:
       throws if a typed tag disagrees; get_serial_tags (whitelisted) feeds the
       stock_entry_tag.js live auto-fetch when serials are entered on an issue/transfer.
       Item "Track Item Tags" checkbox relabelled "Has Item Tag".
+      Patch: sync_outgoing_item_tags now resolves custom_track_item_tags from the Item
+      when the row's copy is blank. That flag is a client fetch_from, so it is empty on
+      any row not typed in the UI (Material Issue button, pull-from-PO, Sales Order ->
+      Stock Entry, imports); previously those rows skipped the fill and the tag stayed
+      blank while the serial copied. Now the one validate handler fills every outgoing
+      row system-wide, on save, regardless of how it was built.
