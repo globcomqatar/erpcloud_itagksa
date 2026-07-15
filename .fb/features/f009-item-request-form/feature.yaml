@@ -60,3 +60,22 @@ components:
       Accounts User, Projects User, and add submit to the existing Stock User — every
       module's operational user can raise and submit an item request. Stock Manager
       keeps cancel/amend/delete.
+
+  - id: f009-c004
+    name: Is Calibration Item flag + Quality role gating
+    type: doctype
+    stage: done
+    status_history: open --> done
+    created: 2026-07-15
+    source: itag_stock/doctype/item_request_form/item_request_form.json, itag_stock/doctype/item_request_form/item_request_form.py
+    responsibility: >
+      New is_calibration_item (Check) with dependent calibration_frequency (Select,
+      the periodicity options) and no_of_calibrations (Int), both shown + mandatory
+      when it is set. on_submit maps them onto the created Item
+      (custom_is_calibration_item / custom_calibration_frequency /
+      custom_no_of_calibrations); validate() blocks a calibration item without
+      has_serial_no (no serial -> no schedule ever raised). has_tag and
+      is_calibration_item are visible only to Quality User / Quality Manager
+      (depends_on frappe.user_roles), and those two roles are added to the DocType
+      permissions (create/read/write/submit; Quality Manager also cancel/amend/delete)
+      so they can actually raise and see the gated flags.

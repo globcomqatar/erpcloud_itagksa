@@ -3,9 +3,8 @@
 
 frappe.ui.form.on("Calibration Schedule", {
 	setup(frm) {
-		frm.set_query("serial_no", "items", (doc, cdt, cdn) => {
-			const row = locals[cdt][cdn];
-			return { filters: row.item_code ? { item_code: row.item_code } : {} };
+		frm.set_query("serial_no", (doc) => {
+			return { filters: doc.item_code ? { item_code: doc.item_code } : {} };
 		});
 	},
 

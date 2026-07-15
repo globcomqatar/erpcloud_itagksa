@@ -25,7 +25,7 @@ description: >
   in turn superseded the original per-serial approach (calibration schedule on the
   Serial No form, daily Task scheduler and report) removed in 15.9.0.
 
-status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done
+status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done --> extended --> done
 created: 2026-07-08
 
 components:
@@ -98,3 +98,69 @@ components:
       visit's calibration date (custom_calibration_date on Material Request Item);
       the MR header custom_calibration_date is set when all chosen visits share one
       date, else left blank with an orange notice pointing to the per-row dates.
+
+  - id: f010-c005
+    name: Header-driven item / serial / tag
+    type: doctype
+    stage: done
+    status_history: open --> done
+    created: 2026-07-15
+    depends_on: [f010-c001, f010-c002]
+    source: itag_quality/doctype/calibration_schedule/calibration_schedule.json, itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js
+    responsibility: >
+      Item Code, Serial No, Item Tag plus the scheduling inputs (start/end date,
+      periodicity, no_of_visits, employee) now live on the Calibration Schedule
+      header; item_code/serial_no/item_tag are in_list_view. The header is the
+      source of truth — validate() derives end_date (apply_periodicity_dates),
+      copies the serial's Item Tag onto the header (fill_item_tag) and rebuilds the
+      single Calibration Schedule Item row from the header (sync_item_row); the
+      read-only items table then feeds the unchanged generate_schedule loop. One
+      serialised item per schedule. serial_no set_query moved from the item row to
+      the header. Dead validate_end_date_visits removed.
+
+  - id: f010-c006
+    name: Item Tag fill on receipt-raised schedules
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-15
+    depends_on: [f010-c003, f007-c002]
+    source: itag_quality/calibration.py, hooks.py
+    responsibility: >
+      Fixes the Item Tag staying blank on a schedule auto-raised from a receipt.
+      The schedule is raised at Serial and Batch Bundle on_submit — before
+      bind_item_tags (f007-c002) writes each row's tag onto its serials — so the
+      tag does not exist yet. New stamp_schedule_item_tags, wired LAST on Purchase
+      Receipt + Stock Entry on_submit (after bind_item_tags), copies each incoming
+      serial's now-bound tag onto the schedule header, item row and visit rows that
+      carry it (db.set_value, blanks only). The manual path is covered by
+      create_calibration_schedule setting the header tag directly (serial already
+      tagged) — no fetch_from reliance. Purchase Receipt on_submit converted from a
+      single hook to a list.
+
+  - id: f010-c007
+    name: Pending-this-month report + bulk Material Request
+    type: report
+    stage: done
+    status_history: open --> done
+    created: 2026-07-15
+    depends_on: [f010-c001, f010-c004]
+    source: itag_quality/report/calibration_due_this_month/, itag_quality/doctype/calibration_schedule/calibration_schedule.py
+    responsibility: >
+      Script Report "Calibration Due This Month" lists Pending visits
+      (Calibration Schedule Detail) whose scheduled_date falls in the filter window
+      (defaults to the current month) on submitted schedules, one row per visit with
+      a hidden visit name for selection; filters from_date/to_date/company; roles
+      Quality Manager/User + Stock User. Columns show item name and employee name
+      (not the codes); get_datatable_options enables the checkbox column so visits can
+      be ticked. Detail rows carry employee_name (fetch_from employee, stamped in
+      generate_schedule since fetch_from does not fire on programmatic set). A "Create Material Request" button raises
+      calibration-service MRs for the ticked visits — frappe.confirm asks Combine
+      (one MR) vs per-schedule (default). make_bulk_material_requests groups by
+      schedule (or all-in-one), inserts draft MRs and returns their names/links.
+      Unlike the single-schedule button (returns an unsaved doc), bulk saves drafts,
+      so each row is made valid with item_code = the calibration item, qty 1 and the
+      visit date for the operator to refine. Inserted with ignore_permissions so the
+      Quality staff the report is offered to (who lack Material Request create) can raise
+      them from this controlled endpoint. make_material_request refactored to share
+      _new_calibration_mr / _append_calibration_visit / _set_header_calibration_date.

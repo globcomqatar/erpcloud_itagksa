@@ -4,6 +4,13 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.12.0 — 2026-07-15
+- Calibration schedules raised from a receipt now show the item tag automatically once the receipt records it.
+- A calibration schedule now carries its item, serial and tag on the schedule itself and lists them in the schedule list; the calibration lines are driven from there.
+- New report of calibration visits due this month, with a one-click bulk raise of their Material Requests (one per schedule, or combined). **Report Name: Calibration Due This Month**
+- Item Request Form: flag an item as a calibration item and set how often and how many times it needs calibrating; these carry over to the item that gets created.
+- Item Request Form: the Has Tag and Is Calibration Item flags are shown only to Quality staff, who can now raise and approve requests.
+
 ### 15.11.1 — 2026-07-13
 - Issuing serialized items to a supplier now fills the item tag automatically from the serial numbers on save, for every stock entry — not only when serials are typed in by hand.
 

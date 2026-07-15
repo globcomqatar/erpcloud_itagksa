@@ -4,7 +4,7 @@
 import frappe
 from frappe import _, throw
 from frappe.model.document import Document
-from frappe.utils import add_days, cint, getdate
+from frappe.utils import add_days, cint, getdate, today
 
 from erpnext.setup.doctype.employee.employee import get_holiday_list_for_employee
 
@@ -14,11 +14,57 @@ DAYS_IN_PERIOD = {"Weekly": 7, "Monthly": 30, "Quarterly": 91, "Half Yearly": 18
 class CalibrationSchedule(Document):
 	def validate(self):
 		if self.docstatus == 0:
-			self.validate_end_date_visits()
+			self.fill_item_tag()
+			self.apply_periodicity_dates()
+			self.sync_item_row()
 		self.validate_details()
 		self.validate_dates_with_periodicity()
 		if self.docstatus == 0 and (not self.schedules or self.items_changed() or self.visit_count_mismatch()):
 			self.generate_schedule()
+
+	def fill_item_tag(self):
+		"""Copy the serial's Item Tag onto the header (read-only display field).
+
+		On a manually created schedule the serial is already tagged. A schedule
+		auto-raised from a receipt runs before the tag is bound to the serial, so
+		this leaves item_tag blank; the receipt handler stamps it in afterwards.
+		"""
+		if self.serial_no:
+			self.item_tag = frappe.db.get_value("Serial No", self.serial_no, "custom_item_tag")
+
+	def apply_periodicity_dates(self):
+		"""Derive end_date (and default no_of_visits) from the header item fields."""
+		if not (self.periodicity and self.start_date):
+			return
+		if not self.no_of_visits:
+			self.no_of_visits = 1
+		self.end_date = add_days(self.start_date, cint(self.no_of_visits) * DAYS_IN_PERIOD[self.periodicity])
+
+	def sync_item_row(self):
+		"""Rebuild the (single) items row from the header fields.
+
+		The header is the source of truth; the items table feeds the existing
+		schedule-generation loop. One serialised item per schedule.
+		"""
+		self.set("items", [])
+		if not self.item_code:
+			return
+		if not self.item_name:
+			self.item_name = frappe.db.get_value("Item", self.item_code, "item_name")
+		self.append(
+			"items",
+			{
+				"item_code": self.item_code,
+				"item_name": self.item_name,
+				"serial_no": self.serial_no,
+				"item_tag": self.item_tag,
+				"start_date": self.start_date,
+				"end_date": self.end_date,
+				"periodicity": self.periodicity,
+				"no_of_visits": self.no_of_visits,
+				"employee": self.employee,
+			},
+		)
 
 	def on_submit(self):
 		if not self.get("schedules"):
@@ -47,22 +93,6 @@ class CalibrationSchedule(Document):
 			if getdate(d.start_date) >= getdate(d.end_date):
 				throw(_("Start date should be less than end date for Item {0}").format(d.item_code))
 
-	def validate_end_date_visits(self):
-		for item in self.items:
-			if not (item.periodicity and item.start_date):
-				continue
-			period = DAYS_IN_PERIOD[item.periodicity]
-
-			if not item.end_date:
-				visits = item.no_of_visits or 1
-				item.end_date = add_days(item.start_date, visits * period)
-
-			if not item.no_of_visits:
-				item.end_date = add_days(item.start_date, period)
-				item.no_of_visits = 1
-			else:
-				item.end_date = add_days(item.start_date, item.no_of_visits * period)
-
 	def validate_dates_with_periodicity(self):
 		from frappe.utils import date_diff
 
@@ -89,8 +119,12 @@ class CalibrationSchedule(Document):
 				child.item_code = d.item_code
 				child.item_name = d.item_name
 				child.serial_no = d.serial_no
+				child.item_tag = d.item_tag
 				child.scheduled_date = dates[i].strftime("%Y-%m-%d")
 				child.employee = d.employee
+				child.employee_name = (
+					frappe.db.get_value("Employee", d.employee, "employee_name") if d.employee else None
+				)
 				child.completion_status = "Pending"
 				child.item_reference = d.name
 				child.idx = count
@@ -178,39 +212,95 @@ def make_material_request(source_name, visits=None):
 	"""
 	source = frappe.get_doc("Calibration Schedule", source_name)
 	selected = set(frappe.parse_json(visits) or [])
-
-	mr = frappe.new_doc("Material Request")
-	mr.material_request_type = "Purchase"
-	mr.company = source.company
-	mr.custom_is_collaboration_service_po = 1
-
-	chosen_dates = set()
-	for visit in source.schedules:
-		if selected and visit.name not in selected:
-			continue
-		chosen_dates.add(visit.scheduled_date)
-		mr.append(
-			"items",
-			{
-				"custom_sub_item": visit.item_code,
-				"custom_sub_item_description": frappe.db.get_value("Item", visit.item_code, "description"),
-				"custom_serial_no": visit.serial_no,
-				"custom_calibration_visit": visit.name,
-				"custom_calibration_schedule": source.name,
-				"custom_calibration_date": visit.scheduled_date,
-			},
-		)
-
-	if not mr.items:
+	chosen = [v for v in source.schedules if not selected or v.name in selected]
+	if not chosen:
 		frappe.throw(_("Select at least one calibration visit to raise a Material Request."))
 
-	if len(chosen_dates) == 1:
-		mr.custom_calibration_date = chosen_dates.pop()
+	mr = _new_calibration_mr(source.company)
+	for visit in chosen:
+		_append_calibration_visit(mr, visit, source.name)
+	_set_header_calibration_date(mr, notify=True)
+
+	return mr.as_dict()
+
+
+@frappe.whitelist()
+def make_bulk_material_requests(visits, combined=0):
+	"""Raise draft calibration Material Requests for visits picked in the report.
+
+	`visits` is a list of Calibration Schedule Detail row names spanning any number of
+	schedules. `combined` off (default) raises one draft Material Request per schedule;
+	on merges every visit into a single draft. Returns the created MR names so the
+	report can link to them. Drafts only — the operator fills the main stock item.
+	"""
+	visit_names = frappe.parse_json(visits) or []
+	if not visit_names:
+		frappe.throw(_("Select at least one pending calibration visit."))
+
+	rows = [frappe.get_doc("Calibration Schedule Detail", name) for name in visit_names]
+	by_schedule = {}
+	for row in rows:
+		by_schedule.setdefault(row.parent, []).append(row)
+
+	if cint(combined):
+		companies = {frappe.db.get_value("Calibration Schedule", s, "company") for s in by_schedule}
+		if len(companies) > 1:
+			frappe.throw(_("Selected visits span multiple companies; uncheck Combine to raise one per schedule."))
+		groups = [[(schedule, row) for schedule, rs in by_schedule.items() for row in rs]]
 	else:
+		groups = [[(schedule, row) for row in rs] for schedule, rs in by_schedule.items()]
+
+	created = []
+	for group in groups:
+		company = frappe.db.get_value("Calibration Schedule", group[0][0], "company")
+		mr = _new_calibration_mr(company)
+		for schedule, visit in group:
+			row = _append_calibration_visit(mr, visit, schedule)
+			# A saved draft needs a valid item + qty; default to the calibration item
+			# itself (qty 1, due on the visit date) for the operator to refine.
+			row.item_code = visit.item_code
+			row.qty = 1
+			row.schedule_date = visit.scheduled_date or today()
+		_set_header_calibration_date(mr, notify=False)
+		# The report is offered to Quality staff, who don't hold Material Request create;
+		# this controlled endpoint only builds calibration-service drafts for them.
+		mr.insert(ignore_permissions=True)
+		created.append(mr.name)
+
+	frappe.db.commit()
+	return created
+
+
+def _new_calibration_mr(company):
+	mr = frappe.new_doc("Material Request")
+	mr.material_request_type = "Purchase"
+	mr.company = company
+	mr.custom_is_collaboration_service_po = 1
+	return mr
+
+
+def _append_calibration_visit(mr, visit, schedule_name):
+	return mr.append(
+		"items",
+		{
+			"custom_sub_item": visit.item_code,
+			"custom_sub_item_description": frappe.db.get_value("Item", visit.item_code, "description"),
+			"custom_serial_no": visit.serial_no,
+			"custom_calibration_visit": visit.name,
+			"custom_calibration_schedule": schedule_name,
+			"custom_calibration_date": visit.scheduled_date,
+		},
+	)
+
+
+def _set_header_calibration_date(mr, notify):
+	"""Set the header date when every chosen visit shares one, else leave it blank."""
+	dates = {row.custom_calibration_date for row in mr.items}
+	if len(dates) == 1:
+		mr.custom_calibration_date = dates.pop()
+	elif notify:
 		frappe.msgprint(
 			_("Selected visits span multiple calibration dates; header Calibration Date left blank. Each item row carries its own date."),
 			indicator="orange",
 			alert=True,
 		)
-
-	return mr.as_dict()

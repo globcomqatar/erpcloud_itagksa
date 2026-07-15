@@ -12,6 +12,8 @@ Stock Entry, Stock Reconciliation) since the bundle is the universal serial carr
 import frappe
 from frappe.utils import today
 
+from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
+
 from erpcloud_itagksa.itag_quality.doctype.calibration_schedule.calibration_schedule import (
 	recompute_progress,
 )
@@ -102,7 +104,7 @@ def create_calibration_schedule(serial_no, item_code, source_type=None, source_n
 	if not item.custom_calibration_frequency or int(item.custom_no_of_calibrations or 0) < 1:
 		return
 
-	if frappe.db.exists("Calibration Schedule Item", {"serial_no": serial_no}):
+	if frappe.db.exists("Calibration Schedule", {"serial_no": serial_no}):
 		return
 
 	company = frappe.defaults.get_global_default("company") or frappe.db.get_value("Company", {}, "name")
@@ -113,15 +115,44 @@ def create_calibration_schedule(serial_no, item_code, source_type=None, source_n
 	if source_type and source_name:
 		schedule.source_document_type = source_type
 		schedule.source_document = source_name
-	schedule.append(
-		"items",
-		{
-			"item_code": item_code,
-			"serial_no": serial_no,
-			"start_date": today(),
-			"periodicity": item.custom_calibration_frequency,
-			"no_of_visits": int(item.custom_no_of_calibrations),
-		},
-	)
+	schedule.item_code = item_code
+	schedule.serial_no = serial_no
+	schedule.start_date = today()
+	schedule.periodicity = item.custom_calibration_frequency
+	schedule.no_of_visits = int(item.custom_no_of_calibrations)
 	schedule.insert(ignore_permissions=True)
 	frappe.db.commit()
+
+
+def stamp_schedule_item_tags(doc, method=None):
+	"""Fill Item Tag on calibration schedules once the receipt has tagged its serials.
+
+	A schedule auto-raised from an inward voucher is created (via the serial bundle)
+	before bind_item_tags writes each row's Item Tag onto its serials, so it starts
+	with a blank tag. Wired LAST on the voucher's on_submit, this runs after the tags
+	exist and copies each serial's tag onto the schedule header and its item/visit rows.
+	"""
+	serials = set()
+	for row in doc.items:
+		if row.get("s_warehouse"):  # outgoing row — no serials created here
+			continue
+		serials.update(get_serial_nos(row.get("serial_no")))
+
+	for serial_no in serials:
+		tag = frappe.db.get_value("Serial No", serial_no, "custom_item_tag")
+		if tag:
+			_stamp_tag_on_schedules(serial_no, tag)
+
+
+def _stamp_tag_on_schedules(serial_no, tag):
+	"""Write the tag onto every blank Item Tag field carrying this serial."""
+	for schedule in frappe.get_all(
+		"Calibration Schedule", filters={"serial_no": serial_no}, fields=["name", "item_tag"]
+	):
+		if not schedule.item_tag:
+			frappe.db.set_value("Calibration Schedule", schedule.name, "item_tag", tag, update_modified=False)
+
+	for dt in ("Calibration Schedule Item", "Calibration Schedule Detail"):
+		for row in frappe.get_all(dt, filters={"serial_no": serial_no}, fields=["name", "item_tag"]):
+			if not row.item_tag:
+				frappe.db.set_value(dt, row.name, "item_tag", tag, update_modified=False)

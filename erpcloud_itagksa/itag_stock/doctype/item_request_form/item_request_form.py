@@ -7,6 +7,10 @@ from frappe.model.document import Document
 
 
 class ItemRequestForm(Document):
+	def validate(self):
+		if self.is_calibration_item and not self.has_serial_no:
+			frappe.throw(_("A calibration item is tracked per serial. Tick 'Has Serial No?'."))
+
 	def on_submit(self):
 		self._create_item()
 
@@ -23,6 +27,9 @@ class ItemRequestForm(Document):
 		item.is_stock_item = self.maintain_stock
 		item.has_serial_no = self.has_serial_no
 		item.custom_track_item_tags = self.has_tag
+		item.custom_is_calibration_item = self.is_calibration_item
+		item.custom_calibration_frequency = self.calibration_frequency
+		item.custom_no_of_calibrations = self.no_of_calibrations
 		item.custom_product_type = self.item_type
 		item.is_customer_provided_item = self.is_customer_provided_item
 		item.customer = self.customer

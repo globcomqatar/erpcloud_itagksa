@@ -269,6 +269,7 @@ doc_events = {
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.collab_stock_entry.on_submit",
 			"erpcloud_itagksa.itag_stock.receipt_tag.bind_item_tags",
 			"erpcloud_itagksa.itag_quality.calibration.stock_entry_on_submit",
+			"erpcloud_itagksa.itag_quality.calibration.stamp_schedule_item_tags",
 		],
 		"on_cancel": [
 			"erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.on_cancel",
@@ -305,7 +306,10 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"validate": "erpcloud_itagksa.itag_stock.receipt_tag.validate_item_tags",
-		"on_submit": "erpcloud_itagksa.itag_stock.receipt_tag.bind_item_tags",
+		"on_submit": [
+			"erpcloud_itagksa.itag_stock.receipt_tag.bind_item_tags",
+			"erpcloud_itagksa.itag_quality.calibration.stamp_schedule_item_tags",
+		],
 	},
 	"Supplier": {
 		"validate": "erpcloud_itagksa.itag_ksa_buying.supplier.supplier.validate",
