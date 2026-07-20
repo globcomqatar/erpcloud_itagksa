@@ -4,6 +4,16 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.0 — 2026-07-20
+**Progress Billing**
+Adds percentage-of-contract-value invoicing to ERPNext Sales Orders, for industries that bill by contract completion percentage (EPC, industrial manufacturing, construction, engineering projects) rather than item quantity.
+
+1. On a Sales Order, set Billing Method to Progress Billing before or after submit.
+2. Submit the Sales Order.
+3. Use Create > Create Progress Invoice, enter a billing percentage, and a draft Sales Invoice is generated with every line's rate scaled to that percentage (quantity is left unchanged).
+4. Repeat until 100% is billed — Progress Billing Status on the Sales Order then flips to Completed.
+5. See the Progress Billing Summary report for a cross-order view of contract value, percentage billed, and remaining amount.
+
 ### 15.12.0 — 2026-07-15
 - Calibration schedules raised from a receipt now show the item tag automatically once the receipt records it.
 - A calibration schedule now carries its item, serial and tag on the schedule itself and lists them in the schedule list; the calibration lines are driven from there.
