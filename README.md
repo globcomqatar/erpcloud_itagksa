@@ -4,6 +4,9 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.0 — 2026-07-21
+- Add Progress Billing: bill Sales Orders by percentage of contract value instead of item quantity, for industries like EPC, construction, and engineering projects. Set Billing Method to Progress Billing on a submitted order, then use Create > Create Progress Invoice to raise each percentage claim. Includes a running Billing Summary and Progress Billing Log on the order, a printable Progress Billing Summary and Progress Invoice format, and a cross-order Progress Billing Summary report.
+
 ### 15.12.0 — 2026-07-15
 - Calibration schedules raised from a receipt now show the item tag automatically once the receipt records it.
 - A calibration schedule now carries its item, serial and tag on the schedule itself and lists them in the schedule list; the calibration lines are driven from there.
