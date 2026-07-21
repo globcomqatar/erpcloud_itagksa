@@ -1,0 +1,15 @@
+{
+ "doctype": "Print Format",
+ "name": "Progress Billing Summary",
+ "doc_type": "Sales Order",
+ "module": "Progress Billing",
+ "standard": "Yes",
+ "custom_format": 0,
+ "disabled": 0,
+ "print_format_type": "Jinja",
+ "print_format_builder": 0,
+ "align_labels_right": 0,
+ "line_breaks": 0,
+ "show_section_headings": 0,
+ "html": "<div class=\"print-heading\">\n\t<h2>Progress Billing Summary<br><small>{{ doc.name }}</small></h2>\n</div>\n<table class=\"table table-bordered\">\n\t<tr><td style=\"width: 30%;\"><b>Customer</b></td><td>{{ doc.customer_name or doc.customer }}</td></tr>\n\t<tr><td><b>Contract Value</b></td><td>{{ doc.get_formatted(\"grand_total\") }}</td></tr>\n\t<tr><td><b>Total % Billed</b></td><td>{{ \"%.2f\"|format(doc.per_billed or 0) }}%</td></tr>\n\t<tr><td><b>Remaining %</b></td><td>{{ \"%.2f\"|format(100 - (doc.per_billed or 0)) }}%</td></tr>\n</table>\n<table class=\"table table-bordered\">\n\t<thead>\n\t\t<tr>\n\t\t\t<th>Progress No.</th>\n\t\t\t<th>Invoice</th>\n\t\t\t<th>%</th>\n\t\t\t<th>Invoice Amount</th>\n\t\t\t<th>Billed to Date</th>\n\t\t\t<th>Remaining</th>\n\t\t\t<th>Paid</th>\n\t\t\t<th>Outstanding</th>\n\t\t\t<th>Status</th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n\t\t{%- for row in doc.pb_progress_billing_log|sort(attribute=\"progress_no\") -%}\n\t\t{%- set live = frappe.db.get_value(\"Sales Invoice\", row.sales_invoice, [\"grand_total\", \"rounded_total\", \"outstanding_amount\"], as_dict=True) or {} -%}\n\t\t{%- set live_paid = (live.rounded_total or live.grand_total or 0) - (live.outstanding_amount or 0) -%}\n\t\t<tr>\n\t\t\t<td>{{ row.progress_no }}</td>\n\t\t\t<td>{{ row.sales_invoice }}</td>\n\t\t\t<td>{{ \"%.2f\"|format(row.billing_percentage or 0) }}%</td>\n\t\t\t<td>{{ row.get_formatted(\"billing_amount\", doc) }}</td>\n\t\t\t<td>{{ row.get_formatted(\"total_billed_amount\", doc) }}</td>\n\t\t\t<td>{{ row.get_formatted(\"remaining_amount\", doc) }}</td>\n\t\t\t<td>{{ \"%.2f\"|format(live_paid) }}</td>\n\t\t\t<td>{{ \"%.2f\"|format(live.outstanding_amount or 0) }}</td>\n\t\t\t<td>{{ row.invoice_status }}</td>\n\t\t</tr>\n\t\t{%- endfor -%}\n\t</tbody>\n</table>\n"
+}

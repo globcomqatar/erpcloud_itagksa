@@ -7,3 +7,6 @@ erpcloud_itagksa.patches.reconcile_stale_custom_field_names
 # Patches added in this section will be executed after doctypes are migrated
 erpcloud_itagksa.patches.rename_product_type_option
 erpcloud_itagksa.patches.backfill_product_type_from_parent_flags
+erpcloud_itagksa.patches.progress_billing_backfill_log
+erpcloud_itagksa.patches.progress_billing_set_totals
+erpcloud_itagksa.patches.progress_billing_set_row_totals

@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "creation": "2026-07-17 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Other",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "progress_no",
+  "billing_date",
+  "billing_percentage",
+  "billing_amount",
+  "total_billed_amount",
+  "remaining_amount",
+  "sales_invoice",
+  "invoice_status",
+  "amount_paid",
+  "outstanding_amount",
+  "payment_percentage",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "progress_no",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Progress No.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "billing_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Billing Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "billing_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Billing Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "billing_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Billing Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_billed_amount",
+   "fieldtype": "Currency",
+   "label": "Total Billed Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "remaining_amount",
+   "fieldtype": "Currency",
+   "label": "Remaining Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sales Invoice",
+   "options": "Sales Invoice",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "invoice_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Invoice Status",
+   "options": "Draft\nSubmitted\nCancelled",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "amount_paid",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount Paid",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Outstanding Amount",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "payment_percentage",
+   "fieldtype": "Percent",
+   "label": "Payment Percentage",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-07-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Progress Billing",
+ "name": "Progress Billing Log",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
