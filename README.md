@@ -4,6 +4,9 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.1 — 2026-07-21
+- Fix a first-deploy install failure in Progress Billing: the migration that backfills existing progress invoices could crash with a database error on a brand-new site.
+
 ### 15.13.0 — 2026-07-21
 - Add Progress Billing: bill Sales Orders by percentage of contract value instead of item quantity, for industries like EPC, construction, and engineering projects. Set Billing Method to Progress Billing on a submitted order, then use Create > Create Progress Invoice to raise each percentage claim. Includes a running Billing Summary and Progress Billing Log on the order, a printable Progress Billing Summary and Progress Invoice format, and a cross-order Progress Billing Summary report.
 
