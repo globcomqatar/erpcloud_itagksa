@@ -2,9 +2,17 @@ import frappe
 from frappe.utils import cint, flt
 
 from erpcloud_itagksa.progress_billing.sales_order.sales_order import update_progress_billing_totals
+from erpcloud_itagksa.progress_billing.setup import ensure_progress_billing_custom_fields
 
 
 def execute():
+	# This patch queries pb_is_progress_invoice / pb_against_sales_order /
+	# pb_progress_billing_percentage on Sales Invoice and appends into
+	# pb_progress_billing_log on Sales Order -- all fixture-shipped custom
+	# fields that don't exist yet the first time a post_model_sync patch runs
+	# on a fresh site (fixtures sync after patches). Ensure them first.
+	ensure_progress_billing_custom_fields()
+
 	# Submitted invoices only: drafts must not be linked from the log (their
 	# Link row would block deleting the draft), matching sync_progress_billing_log_row.
 	invoices = frappe.get_all(
