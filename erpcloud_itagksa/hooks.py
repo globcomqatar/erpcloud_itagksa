@@ -320,6 +320,20 @@ doc_events = {
 	"Serial and Batch Bundle": {
 		"on_submit": "erpcloud_itagksa.itag_quality.calibration.bundle_on_submit",
 	},
+	"Sales Order": {
+		"onload": "erpcloud_itagksa.progress_billing.sales_order.sales_order.refresh_progress_billing_log_payments",
+		"validate": "erpcloud_itagksa.progress_billing.sales_order.sales_order.validate_billing_method_lock",
+		"before_update_after_submit": "erpcloud_itagksa.progress_billing.sales_order.sales_order.validate_billing_method_lock",
+	},
+	"Sales Invoice": {
+		"validate": "erpcloud_itagksa.progress_billing.sales_invoice.sales_invoice.validate_is_progress_invoice",
+		"on_submit": "erpcloud_itagksa.progress_billing.sales_invoice.sales_invoice.update_progress_billing_status",
+		"on_cancel": [
+			"erpcloud_itagksa.progress_billing.sales_invoice.sales_invoice.update_progress_billing_status",
+			"erpcloud_itagksa.progress_billing.sales_invoice.sales_invoice.sync_progress_billing_log_row",
+		],
+		"on_update": "erpcloud_itagksa.progress_billing.sales_invoice.sales_invoice.sync_progress_billing_log_row",
+	},
 }
 
 scheduler_events = {
@@ -329,7 +343,10 @@ scheduler_events = {
 }
 
 doctype_js = {
-	"Sales Order": "itag_manufacturing/sales_order/sales_order.js",
+	"Sales Order": [
+		"itag_manufacturing/sales_order/sales_order.js",
+		"progress_billing/sales_order/sales_order.js",
+	],
 	"Stock Entry": [
 		"itag_manufacturing/stock_entry/stock_entry.js",
 		"itag_manufacturing/stock_entry/collab_stock_entry.js",
@@ -351,11 +368,11 @@ override_doctype_dashboards = {
 fixtures = [
 	{
 		"dt": "Custom Field",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
 	},
 	{
 		"dt": "Property Setter",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying"]]],
+		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
 	},
 	{
 		"dt": "Stock Entry Type",
