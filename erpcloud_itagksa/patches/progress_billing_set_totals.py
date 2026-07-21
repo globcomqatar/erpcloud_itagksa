@@ -1,15 +1,16 @@
 import frappe
 from frappe.utils import flt
 
-from erpcloud_itagksa.progress_billing.setup import ensure_summary_custom_fields
+from erpcloud_itagksa.progress_billing.setup import ensure_progress_billing_custom_fields
 
 
 def execute():
-	# The pb_total_amount / pb_billed_amount / pb_remaining_amount custom
-	# fields normally ship as fixtures, which sync AFTER post_model_sync
-	# patches -- so on the first migrate that ships this patch, the columns
-	# don't exist yet. Ensure them here first (idempotent).
-	ensure_summary_custom_fields()
+	# This patch filters by pb_billing_method and writes pb_total_amount /
+	# pb_billed_amount / pb_remaining_amount -- all fixture-shipped custom
+	# fields, which sync AFTER post_model_sync patches -- so on the first
+	# migrate that ships this patch, the columns don't exist yet. Ensure them
+	# here first (idempotent).
+	ensure_progress_billing_custom_fields()
 
 	for name in frappe.get_all(
 		"Sales Order", filters={"pb_billing_method": "Progress Billing"}, pluck="name"
