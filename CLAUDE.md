@@ -28,6 +28,28 @@ Title: one line, plain language, what the change does for the user.
 Body: what changed and why, plus how to verify it manually. Same plain-language rule the
 changelog had — describe the user-facing change, not the implementation.
 
+**Keep it short.** Same sections, a fraction of the words. Target ~40 lines; if it runs past
+one screen it is too long. The reviewer reads the diff for detail — the PR body only orients them.
+
+- One `##` section per feature, plus one `## Verify` at the end. No sub-headings, no tables.
+- Bullets, not paragraphs. One line each. No line restates another.
+- Skip the rationale unless a decision looks wrong without it — then one clause, not a paragraph.
+- Verify steps: numbered, one action each, only the paths a reviewer would actually click.
+- No "Notes" section restating the release rule, and no closing summary.
+
+Template:
+
+```markdown
+## <Feature>
+- <what changed, user-facing>
+- <what changed, user-facing>
+- Deploy: <patch or migrate step, only if there is one>
+
+## Verify
+1. <action → expected result>
+2. <action → expected result>
+```
+
 ---
 
 ## Architecture
