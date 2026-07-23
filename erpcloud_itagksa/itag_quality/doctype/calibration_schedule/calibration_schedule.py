@@ -8,19 +8,12 @@ from frappe.utils import add_days, cint, getdate, today
 
 from erpnext.setup.doctype.employee.employee import get_holiday_list_for_employee
 
-DAYS_IN_PERIOD = {"Weekly": 7, "Monthly": 30, "Quarterly": 91, "Half Yearly": 182, "Yearly": 365}
-
 
 class CalibrationSchedule(Document):
 	def validate(self):
 		if self.docstatus == 0:
 			self.fill_item_tag()
-			self.apply_periodicity_dates()
-			self.sync_item_row()
-		self.validate_details()
-		self.validate_dates_with_periodicity()
-		if self.docstatus == 0 and (not self.schedules or self.items_changed() or self.visit_count_mismatch()):
-			self.generate_schedule()
+		self.validate_calibration_window()
 
 	def fill_item_tag(self):
 		"""Copy the serial's Item Tag onto the header (read-only display field).
@@ -32,43 +25,17 @@ class CalibrationSchedule(Document):
 		if self.serial_no:
 			self.item_tag = frappe.db.get_value("Serial No", self.serial_no, "custom_item_tag")
 
-	def apply_periodicity_dates(self):
-		"""Derive end_date (and default no_of_visits) from the header item fields."""
-		if not (self.periodicity and self.start_date):
-			return
-		if not self.no_of_visits:
-			self.no_of_visits = 1
-		self.end_date = add_days(self.start_date, cint(self.no_of_visits) * DAYS_IN_PERIOD[self.periodicity])
-
-	def sync_item_row(self):
-		"""Rebuild the (single) items row from the header fields.
-
-		The header is the source of truth; the items table feeds the existing
-		schedule-generation loop. One serialised item per schedule.
-		"""
-		self.set("items", [])
-		if not self.item_code:
-			return
-		if not self.item_name:
-			self.item_name = frappe.db.get_value("Item", self.item_code, "item_name")
-		self.append(
-			"items",
-			{
-				"item_code": self.item_code,
-				"item_name": self.item_name,
-				"serial_no": self.serial_no,
-				"item_tag": self.item_tag,
-				"start_date": self.start_date,
-				"end_date": self.end_date,
-				"periodicity": self.periodicity,
-				"no_of_visits": self.no_of_visits,
-				"employee": self.employee,
-			},
-		)
+	def validate_calibration_window(self):
+		if (
+			self.purchase_date
+			and self.end_of_life_date
+			and getdate(self.purchase_date) >= getdate(self.end_of_life_date)
+		):
+			throw(_("End of Life Date must be after Purchase Date"))
 
 	def on_submit(self):
 		if not self.get("schedules"):
-			throw(_("Please click on 'Generate Schedule' to get the calibration schedule"))
+			throw(_("Please click on 'Generate Calibration Schedule' to get the calibration visits"))
 		self.db_set("status", "Submitted")
 		self.db_set("calibration_progress", f"0 / {len(self.schedules)} completed")
 
@@ -79,104 +46,81 @@ class CalibrationSchedule(Document):
 	def on_cancel(self):
 		self.db_set("status", "Cancelled")
 
-	def validate_details(self):
-		if not self.get("items"):
-			throw(_("Please enter calibration details first"))
-
-		for d in self.get("items"):
-			if not d.item_code:
-				throw(_("Please select item code"))
-			if not d.start_date or not d.end_date:
-				throw(_("Please select Start Date and End Date for Item {0}").format(d.item_code))
-			if not d.no_of_visits:
-				throw(_("Please mention the number of calibrations required for Item {0}").format(d.item_code))
-			if getdate(d.start_date) >= getdate(d.end_date):
-				throw(_("Start date should be less than end date for Item {0}").format(d.item_code))
-
-	def validate_dates_with_periodicity(self):
-		from frappe.utils import date_diff
-
-		for d in self.get("items"):
-			if d.start_date and d.end_date and d.periodicity:
-				diff = date_diff(d.end_date, d.start_date) + 1
-				if diff < DAYS_IN_PERIOD[d.periodicity]:
-					throw(
-						_(
-							"Row {0}: To set {1} periodicity, the gap between start and end date must be at least {2} days"
-						).format(d.idx, d.periodicity, DAYS_IN_PERIOD[d.periodicity])
-					)
-
 	@frappe.whitelist()
 	def generate_schedule(self):
+		"""Fill the visit rows from the header and save.
+
+		The only writer of visit rows — saving the form never regenerates them. The
+		save is done here because a whitelisted doc method only returns the mutated
+		doc to the client; without it the generated rows are never written.
+		"""
 		if self.docstatus != 0:
 			return
+		self.validate_generation_inputs()
+
+		employee_name = (
+			frappe.db.get_value("Employee", self.employee, "employee_name") if self.employee else None
+		)
 		self.set("schedules", [])
-		count = 1
-		for d in self.get("items"):
-			dates = self.create_schedule_list(d.start_date, d.end_date, d.no_of_visits, d.employee)
-			for i in range(d.no_of_visits):
-				child = self.append("schedules")
-				child.item_code = d.item_code
-				child.item_name = d.item_name
-				child.serial_no = d.serial_no
-				child.item_tag = d.item_tag
-				child.scheduled_date = dates[i].strftime("%Y-%m-%d")
-				child.employee = d.employee
-				child.employee_name = (
-					frappe.db.get_value("Employee", d.employee, "employee_name") if d.employee else None
-				)
-				child.completion_status = "Pending"
-				child.item_reference = d.name
-				child.idx = count
-				count += 1
+		for scheduled_date in self.create_schedule_list():
+			self.append(
+				"schedules",
+				{
+					"item_code": self.item_code,
+					"item_name": self.item_name,
+					"serial_no": self.serial_no,
+					"item_tag": self.item_tag,
+					"scheduled_date": scheduled_date,
+					"employee": self.employee,
+					"employee_name": employee_name,
+					"completion_status": "Pending",
+				},
+			)
+		self.save()
 
-	def create_schedule_list(self, start_date, end_date, no_of_visits, employee):
+	def validate_generation_inputs(self):
+		if not self.purchase_date or not self.end_of_life_date:
+			throw(_("Set Purchase Date and End of Life Date before generating the schedule"))
+		if cint(self.no_of_calibrations) < 1:
+			throw(_("Set how many calibrations are due between those two dates"))
+		self.validate_calibration_window()
+
+	def create_schedule_list(self):
+		"""Space the calibrations evenly between purchase and end of life.
+
+		The last one lands on the end-of-life date. A date falling on a holiday is
+		pulled back to the working day before it.
+		"""
+		purchase_date = getdate(self.purchase_date)
+		end_of_life_date = getdate(self.end_of_life_date)
+		count = cint(self.no_of_calibrations)
+		days_between_calibrations = (end_of_life_date - purchase_date).days / count
+		holidays = self.get_holidays()
+
 		schedule_list = []
-		start_date_copy = start_date
-		add_by = (getdate(end_date) - getdate(start_date)).days / no_of_visits
-
-		for _visit in range(cint(no_of_visits)):
-			if getdate(start_date_copy) < getdate(end_date):
-				start_date_copy = add_days(start_date_copy, add_by)
-				if len(schedule_list) < no_of_visits:
-					schedule_date = self.avoid_holidays(getdate(start_date_copy), employee)
-					if schedule_date > getdate(end_date):
-						schedule_date = getdate(end_date)
-					schedule_list.append(schedule_date)
+		for calibration in range(1, count + 1):
+			scheduled_date = add_days(purchase_date, round(days_between_calibrations * calibration))
+			schedule_list.append(avoid_holidays(getdate(scheduled_date), holidays))
 
 		return schedule_list
 
-	def avoid_holidays(self, schedule_date, employee):
-		if employee:
-			holiday_list = get_holiday_list_for_employee(employee)
-		else:
-			holiday_list = frappe.get_cached_value("Company", self.company, "default_holiday_list")
-
+	def get_holidays(self):
+		holiday_list = (
+			get_holiday_list_for_employee(self.employee)
+			if self.employee
+			else frappe.get_cached_value("Company", self.company, "default_holiday_list")
+		)
 		if not holiday_list:
-			return schedule_date
+			return []
+		return frappe.db.get_all("Holiday", {"parent": holiday_list}, pluck="holiday_date")
 
-		holidays = frappe.db.get_all("Holiday", {"parent": holiday_list}, pluck="holiday_date")
-		for _i in range(len(holidays)):
-			if schedule_date in holidays:
-				schedule_date = add_days(schedule_date, -1)
-			else:
-				break
-		return schedule_date
 
-	def items_changed(self):
-		before = self.get_doc_before_save()
-		if not before:
-			return False
-		if len(before.items) != len(self.items):
-			return True
-		fields = ["item_code", "serial_no", "start_date", "end_date", "periodicity", "no_of_visits", "employee"]
-		for prev, cur in zip(before.items, self.items, strict=False):
-			if any(str(prev.get(f)) != str(cur.get(f)) for f in fields):
-				return True
-		return False
-
-	def visit_count_mismatch(self):
-		return len(self.schedules) != sum(cint(d.no_of_visits) for d in self.items)
+def avoid_holidays(scheduled_date, holidays):
+	for _attempt in range(len(holidays)):
+		if scheduled_date not in holidays:
+			break
+		scheduled_date = add_days(scheduled_date, -1)
+	return scheduled_date
 
 
 def recompute_progress(schedule_name):

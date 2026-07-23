@@ -351,6 +351,7 @@ doctype_js = {
 		"itag_manufacturing/stock_entry/stock_entry.js",
 		"itag_manufacturing/stock_entry/collab_stock_entry.js",
 		"itag_stock/stock_entry_tag.js",
+		"itag_quality/stock_entry_inspection.js",
 	],
 	"Job Card": "itag_manufacturing/job_card/job_card.js",
 	"Work Order": "itag_manufacturing/work_order/work_order.js",

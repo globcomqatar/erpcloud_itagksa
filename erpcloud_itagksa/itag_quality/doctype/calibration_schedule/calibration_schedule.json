@@ -20,15 +20,12 @@
   "item_name",
   "serial_no",
   "item_tag",
-  "column_break_item",
-  "start_date",
-  "end_date",
-  "periodicity",
-  "no_of_visits",
   "employee",
   "employee_name",
-  "items_section",
-  "items",
+  "column_break_item",
+  "purchase_date",
+  "end_of_life_date",
+  "no_of_calibrations",
   "generate_schedule",
   "schedules_section",
   "schedules",
@@ -140,29 +137,23 @@
   },
   {
    "default": "Today",
-   "fieldname": "start_date",
+   "description": "When the equipment was bought. The first calibration is spaced off this date.",
+   "fieldname": "purchase_date",
    "fieldtype": "Date",
-   "label": "Start Date",
+   "label": "Purchase Date",
    "reqd": 1
   },
   {
-   "fieldname": "end_date",
+   "description": "When the equipment retires. The last calibration lands on this date.",
+   "fieldname": "end_of_life_date",
    "fieldtype": "Date",
-   "label": "End Date",
-   "read_only": 1
+   "label": "End of Life Date"
   },
   {
-   "fieldname": "periodicity",
-   "fieldtype": "Select",
-   "label": "Periodicity",
-   "options": "\nWeekly\nMonthly\nQuarterly\nHalf Yearly\nYearly",
-   "reqd": 1
-  },
-  {
-   "fieldname": "no_of_visits",
+   "description": "How many calibrations fall between the purchase and end of life dates.",
+   "fieldname": "no_of_calibrations",
    "fieldtype": "Int",
-   "label": "No of Calibrations",
-   "reqd": 1
+   "label": "No of Calibrations"
   },
   {
    "fieldname": "employee",
@@ -171,23 +162,10 @@
    "options": "Employee"
   },
   {
-   "collapsible": 1,
-   "fieldname": "items_section",
-   "fieldtype": "Section Break",
-   "label": "Items (generated from Calibration Item)"
-  },
-  {
-   "description": "Filled automatically from the Calibration Item fields above.",
-   "fieldname": "items",
-   "fieldtype": "Table",
-   "label": "Items",
-   "options": "Calibration Schedule Item",
-   "read_only": 1
-  },
-  {
+   "depends_on": "eval:doc.docstatus === 0",
    "fieldname": "generate_schedule",
    "fieldtype": "Button",
-   "label": "Generate Schedule"
+   "label": "Generate Calibration Schedule"
   },
   {
    "fieldname": "schedules_section",
@@ -221,7 +199,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-15 10:09:13.606351",
+ "modified": "2026-07-23 12:22:23.962307",
  "modified_by": "Administrator",
  "module": "ITAG Quality",
  "name": "Calibration Schedule",

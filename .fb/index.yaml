@@ -78,4 +78,11 @@ features:
     title: Calibration via custom Calibration Schedule
     status: done
     depends_on: [f007]
-    components: 3
+    components: 8
+  - fid: f011
+    slug: inward-quality-inspection
+    module: itag_quality
+    title: Inward Quality Inspection per serial on a Stock Entry
+    status: done
+    depends_on: [f002, f003]
+    components: 2

@@ -28,8 +28,6 @@ class ItemRequestForm(Document):
 		item.has_serial_no = self.has_serial_no
 		item.custom_track_item_tags = self.has_tag
 		item.custom_is_calibration_item = self.is_calibration_item
-		item.custom_calibration_frequency = self.calibration_frequency
-		item.custom_no_of_calibrations = self.no_of_calibrations
 		item.custom_product_type = self.item_type
 		item.is_customer_provided_item = self.is_customer_provided_item
 		item.customer = self.customer
