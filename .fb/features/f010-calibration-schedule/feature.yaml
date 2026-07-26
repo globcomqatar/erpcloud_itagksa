@@ -25,7 +25,13 @@ description: >
   in turn superseded the original per-serial approach (calibration schedule on the
   Serial No form, daily Task scheduler and report) removed in 15.9.0.
 
-status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done --> extended --> done
+  Restructured 2026-07-23 (c008): the calibration plan is configured on the schedule,
+  not the Item. Periodicity is gone — the operator enters Purchase Date, End of Life
+  Date and No of Calibrations, and the calibrations are spaced evenly between the two
+  dates. Generation is button-driven only. The Calibration Schedule Item child table
+  is deleted; the Item keeps just the is-calibration-item flag.
+
+status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done --> extended --> done --> restructured --> done
 created: 2026-07-08
 
 components:
@@ -33,48 +39,52 @@ components:
     name: Calibration Schedule doctype
     type: doctype
     stage: done
-    status_history: open --> done
-    source: itag_quality/doctype/calibration_schedule, itag_quality/doctype/calibration_schedule_item, itag_quality/doctype/calibration_schedule_detail
+    status_history: open --> done --> restructured --> done
+    source: itag_quality/doctype/calibration_schedule, itag_quality/doctype/calibration_schedule_detail
     responsibility: >
-      Submittable Calibration Schedule (module ITAG Quality) with Calibration Schedule
-      Item and Calibration Schedule Detail child tables. Item line: item_code, serial_no
-      (Link -> Serial No, single calibration serial), item_tag (fetch from serial),
-      start/end date, periodicity, no_of_visits, employee (Link -> Employee). Detail
-      row: item, serial, scheduled_date, actual_date, completion_status, employee.
-      No customer/contact/territory/sales-order fields.
+      Submittable Calibration Schedule (module ITAG Quality) with one child table,
+      Calibration Schedule Detail. Header: item_code, serial_no (Link -> Serial No,
+      single calibration serial), item_tag (fetch from serial), purchase_date,
+      end_of_life_date, no_of_calibrations, employee (Link -> Employee). Detail row:
+      item, serial, scheduled_date, actual_date, completion_status, employee.
+      No customer/contact/territory/sales-order fields. The Calibration Schedule Item
+      child table was deleted in c008 — the header is the only input.
 
   - id: f010-c002
     name: Schedule generation controller
     type: controller
     stage: done
-    status_history: open --> done
+    status_history: open --> done --> restructured --> done
     depends_on: [f010-c001]
     source: itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js
     responsibility: >
-      CalibrationSchedule controller ports generate_schedule + end-date/periodicity
-      validation from ERPNext's Maintenance Schedule, stripped of customer/sales/AMC/
-      event/serial-bundle logic. Fans periodicity x no_of_visits into schedules, stamps
-      serial + employee onto each row, avoids holiday-list dates (from the employee, or
-      company default). end_date left blank is filled before generation. Client
-      set_query restricts serial_no to the row's item_code; Generate Schedule button.
+      CalibrationSchedule controller generates the visit rows from the header:
+      calibrations spaced evenly between purchase_date and end_of_life_date, the last
+      one landing on end_of_life_date, each pulled back off a holiday (list from the
+      employee, or the company default; fetched once per run). Client set_query
+      restricts serial_no to the header's item_code. Rewritten in c008 — the ported
+      Maintenance Schedule periodicity logic is gone.
 
   - id: f010-c003
     name: Auto-raise schedule on receipt
     type: controller
     stage: done
-    status_history: open --> done
+    status_history: open --> done --> restructured --> done
     depends_on: [f010-c001]
-    source: itag_quality/calibration.py, itag_quality/calibration_dashboard.py, fixtures/custom_field.json
+    source: itag_quality/calibration.py, itag_quality/calibration_dashboard.py
     responsibility: >
-      Item markers (custom_is_calibration_item, custom_calibration_frequency using the
-      periodicity options, custom_no_of_calibrations). Serial No after_insert and inward
-      Serial and Batch Bundle on_submit call create_calibration_schedule, which raises
+      Item marker custom_is_calibration_item only — the frequency and count markers were
+      dropped in c008, so the raised schedule is a draft the operator completes. Serial
+      No after_insert and inward Serial and Batch Bundle on_submit call
+      create_calibration_schedule, which raises
       one Calibration Schedule per calibration serial. Idempotent on the line serial_no;
       covers every inward voucher via the universal Serial and Batch Bundle carrier.
       Receipt-raised schedules store the source voucher (source_document_type +
       source_document Dynamic Link, mirroring the bundle's voucher_type / voucher_no);
       override_doctype_dashboards wires Calibration Schedule into the Stock Entry and
-      Purchase Receipt Connections tabs via that dynamic link.
+      Purchase Receipt Connections tabs via that dynamic link. The bundle's posting_date
+      seeds purchase_date (Serial No carries no purchase date in v15); a manually created
+      serial falls back to today.
 
   - id: f010-c004
     name: Post-submit edit + Material Request handoff
@@ -103,20 +113,19 @@ components:
     name: Header-driven item / serial / tag
     type: doctype
     stage: done
-    status_history: open --> done
+    status_history: open --> done --> restructured --> done
     created: 2026-07-15
     depends_on: [f010-c001, f010-c002]
     source: itag_quality/doctype/calibration_schedule/calibration_schedule.json, itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js
     responsibility: >
-      Item Code, Serial No, Item Tag plus the scheduling inputs (start/end date,
-      periodicity, no_of_visits, employee) now live on the Calibration Schedule
-      header; item_code/serial_no/item_tag are in_list_view. The header is the
-      source of truth — validate() derives end_date (apply_periodicity_dates),
-      copies the serial's Item Tag onto the header (fill_item_tag) and rebuilds the
-      single Calibration Schedule Item row from the header (sync_item_row); the
-      read-only items table then feeds the unchanged generate_schedule loop. One
-      serialised item per schedule. serial_no set_query moved from the item row to
-      the header. Dead validate_end_date_visits removed.
+      Item Code, Serial No, Item Tag plus the scheduling inputs live on the
+      Calibration Schedule header; item_code/serial_no/item_tag are in_list_view.
+      The header is the only source of truth — validate() copies the serial's Item
+      Tag onto the header (fill_item_tag) and checks the date window; generation
+      reads the header directly. One serialised item per schedule. serial_no
+      set_query sits on the header. In c008 the mirrored items row (sync_item_row)
+      was deleted along with the child table, and the scheduling inputs became
+      purchase_date / end_of_life_date / no_of_calibrations.
 
   - id: f010-c006
     name: Item Tag fill on receipt-raised schedules
@@ -132,7 +141,7 @@ components:
       bind_item_tags (f007-c002) writes each row's tag onto its serials — so the
       tag does not exist yet. New stamp_schedule_item_tags, wired LAST on Purchase
       Receipt + Stock Entry on_submit (after bind_item_tags), copies each incoming
-      serial's now-bound tag onto the schedule header, item row and visit rows that
+      serial's now-bound tag onto the schedule header and the visit rows that
       carry it (db.set_value, blanks only). The manual path is covered by
       create_calibration_schedule setting the header tag directly (serial already
       tagged) — no fetch_from reliance. Purchase Receipt on_submit converted from a
@@ -164,3 +173,43 @@ components:
       Quality staff the report is offered to (who lack Material Request create) can raise
       them from this controlled endpoint. make_material_request refactored to share
       _new_calibration_mr / _append_calibration_visit / _set_header_calibration_date.
+
+  - id: f010-c008
+    name: Purchase-to-end-of-life calibration plan
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-23
+    depends_on: [f010-c001, f010-c002, f010-c003, f010-c005]
+    source: itag_quality/doctype/calibration_schedule/calibration_schedule.json, itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule_detail/calibration_schedule_detail.json, itag_quality/calibration.py, itag_stock/doctype/item_request_form/item_request_form.json, itag_stock/doctype/item_request_form/item_request_form.py, patches/drop_item_calibration_config_fields.py, patches.txt
+    responsibility: >
+      Moves the calibration plan off the Item and onto the schedule. Header fields
+      start_date / end_date / periodicity / no_of_visits are replaced by purchase_date
+      (reqd), end_of_life_date and no_of_calibrations; the calibrations are spaced
+      evenly across the window ((eol - purchase) / count), the last landing on
+      end_of_life_date, a date on a holiday pulled back a day. end_of_life_date and
+      no_of_calibrations are deliberately not reqd so a receipt-raised draft can be
+      inserted blank; generate_schedule enforces them instead.
+
+      Generation is button-driven only — the validate() auto-regenerate is gone, so
+      visits change only when the operator presses Generate Calibration Schedule
+      (button hidden after submit). generate_schedule ends in self.save(): a whitelisted
+      doc method only hands the mutated doc back to the client (frappe.handler
+      run_doc_method never persists), and with validate() no longer regenerating there
+      is no other writer, so without the save the rows vanish on reload. The client
+      blocks the button on an unsaved document, which that save would have nothing to
+      write to. Deleted: the Calibration Schedule Item doctype and
+      its mirror/compare code (sync_item_row, items_changed, visit_count_mismatch,
+      validate_details, validate_dates_with_periodicity, apply_periodicity_dates,
+      DAYS_IN_PERIOD), plus the orphaned item_reference field on Calibration Schedule
+      Detail. avoid_holidays became a module function taking a pre-fetched holiday list
+      (was one query per visit).
+
+      Item keeps custom_is_calibration_item only; custom_calibration_frequency and
+      custom_no_of_calibrations are dropped from the Item Request Form (its own fields
+      and the Item it creates). Those three Item fields ship in no app's fixtures — they
+      exist only on the site, so the two dead ones cannot be retired by a fixture edit.
+      Patch drop_item_calibration_config_fields (post_model_sync) deletes them and the
+      Calibration Schedule Item doctype, which migrate leaves orphaned when an app drops
+      it; both are guarded so the patch is a no-op on a site already clean or freshly
+      installed.

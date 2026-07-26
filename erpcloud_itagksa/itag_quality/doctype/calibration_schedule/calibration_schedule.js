@@ -20,6 +20,10 @@ frappe.ui.form.on("Calibration Schedule", {
 
 	generate_schedule(frm) {
 		if (frm.doc.docstatus !== 0) return;
+		// Generation saves the document server-side, which needs a document that exists.
+		if (frm.is_new()) {
+			frappe.throw(__("Save the Calibration Schedule before generating the visits"));
+		}
 		frm.call("generate_schedule").then(() => frm.refresh_field("schedules"));
 	},
 });

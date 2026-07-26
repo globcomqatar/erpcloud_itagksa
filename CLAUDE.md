@@ -6,30 +6,48 @@ Unified ITAG KSA app. Manufacturing + quality customization migrated from
 
 ---
 
-## RELEASE RULE — required before every push to GitHub
+## RELEASE RULE — branch + PR, no version bump
 
-Every push to GitHub MUST first include both of these, in the same commit/PR:
+Ship every change on a branch and merge it through a pull request. **No version bump,
+no README changelog entry.** Do not touch `__version__` in `erpcloud_itagksa/__init__.py`
+and do not add to `## Changelog` in `README.md` — the git history and the PR are the record.
 
-1. **Version bump** in `erpcloud_itagksa/__init__.py` (`__version__`, currently `15.11.0`).
-2. **Changelog entry** in `README.md` under `## Changelog` — new version, date, summary of changes.
+Never commit straight to `main`, never push `main`.
 
-No push without both. A code change with no version bump and no changelog entry is incomplete.
+### Flow
+1. Branch off current `main`: `feat/<short-slug>` for new behavior, `fix/<short-slug>` for a bug fix.
+2. Commit the work on that branch.
+3. Push it: `git push -u upstream feat/<short-slug>` — `upstream` is the only remote
+   (`globcomqatar/erpcloud_itagksa`); there is no `origin`.
+4. Open the PR with `gh`, base `main`:
+   `gh pr create --base main --head feat/<short-slug> --title "..." --body "..."`
+5. Leave the merge to the reviewer. Do not self-merge unless asked.
 
-**One version per push.** Accumulate all changes since the last push into a single pending version — do not cut a new version per tweak. Keep changelog bullets **compact**: one line per change, no sub-detail. Fold follow-up edits into the pending unreleased entry rather than adding a new one.
+### PR content
+Title: one line, plain language, what the change does for the user.
+Body: what changed and why, plus how to verify it manually. Same plain-language rule the
+changelog had — describe the user-facing change, not the implementation.
 
-**Plain language.** Write changelog bullets in concise, plain language — describe the user-facing change, not the implementation. Avoid field/function names, file paths, and internal jargon where a plain phrase works.
+**Keep it short.** Same sections, a fraction of the words. Target ~40 lines; if it runs past
+one screen it is too long. The reviewer reads the diff for detail — the PR body only orients them.
 
-### Versioning (semver)
-- **patch** (`x.y.Z`) — bug fix, no behavior change.
-- **minor** (`x.Y.0`) — new feature, backward compatible.
-- **major** (`X.0.0`) — breaking change (doctype/API/fixture change that needs migration).
+- One `##` section per feature, plus one `## Verify` at the end. No sub-headings, no tables.
+- Bullets, not paragraphs. One line each. No line restates another.
+- Skip the rationale unless a decision looks wrong without it — then one clause, not a paragraph.
+- Verify steps: numbered, one action each, only the paths a reviewer would actually click.
+- No "Notes" section restating the release rule, and no closing summary.
 
-### Changelog entry format
-```
-## Changelog
+Template:
 
-### 0.1.0 — 2026-06-30
-- Short bullet per change. Imperative mood.
+```markdown
+## <Feature>
+- <what changed, user-facing>
+- <what changed, user-facing>
+- Deploy: <patch or migrate step, only if there is one>
+
+## Verify
+1. <action → expected result>
+2. <action → expected result>
 ```
 
 ---

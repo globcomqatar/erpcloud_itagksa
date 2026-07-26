@@ -16,8 +16,6 @@
   "has_serial_no",
   "has_tag",
   "is_calibration_item",
-  "calibration_frequency",
-  "no_of_calibrations",
   "is_customer_provided_item",
   "customer",
   "description_section",
@@ -82,21 +80,6 @@
    "fieldname": "is_calibration_item",
    "fieldtype": "Check",
    "label": "Is Calibration Item"
-  },
-  {
-   "depends_on": "eval:doc.is_calibration_item",
-   "fieldname": "calibration_frequency",
-   "fieldtype": "Select",
-   "label": "Calibration Frequency",
-   "mandatory_depends_on": "eval:doc.is_calibration_item",
-   "options": "\nWeekly\nMonthly\nQuarterly\nHalf Yearly\nYearly"
-  },
-  {
-   "depends_on": "eval:doc.is_calibration_item",
-   "fieldname": "no_of_calibrations",
-   "fieldtype": "Int",
-   "label": "No of Calibrations",
-   "mandatory_depends_on": "eval:doc.is_calibration_item"
   },
   {
    "default": "0",

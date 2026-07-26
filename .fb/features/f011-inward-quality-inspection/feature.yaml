@@ -1,0 +1,83 @@
+fid: f011
+slug: inward-quality-inspection
+module: itag_quality
+title: Inward Quality Inspection per serial on a Stock Entry
+depends_on: [f002, f003]
+description: >
+  Gives the Stock Entry "Quality Verification Required" checkbox
+  (custom_inward_inspection_required) something to do. The checkbox already existed —
+  the CPI GRN mapper sets it on every Material Receipt raised from a Sales Order — but
+  nothing read it, so it was a display-only marker.
+
+  On a saved Stock Entry carrying the flag — draft or submitted — a Create Quality
+  Inspection button raises one draft Incoming Quality Inspection per received serial
+  number, across every incoming row. One inspection per serial (not per row) so a mixed
+  receipt can be part accepted and part rejected. A success message links to the Quality
+  Inspection list filtered to that Stock Entry.
+
+  Inspection on the draft receipt is the point: the material is checked before it is
+  accepted into stock. The consequence is that an inspection raised on a draft cannot be
+  submitted until the receipt is — its serial does not exist as a record yet (see c001).
+
+  No submit gate: the button is an operator action, not a validation. The inspections
+  are drafts — readings and the Accepted / Rejected call stay with the inspector.
+
+status_history: open --> done
+created: 2026-07-23
+
+components:
+  - id: f011-c001
+    name: Per-serial inspection builder
+    type: controller
+    stage: done
+    status_history: open --> done
+    source: itag_quality/inward_inspection.py
+    responsibility: >
+      Whitelisted create_quality_inspections(stock_entry) builds one draft Quality
+      Inspection per received serial: inspection_type Incoming, reference Stock Entry,
+      item_code and batch_no from the row, item_serial_no the serial, sample_size 1.
+      Returns the names created.
+
+      Works on a draft receipt, which is where incoming inspection belongs; only a
+      cancelled Stock Entry is refused. Serial No records are created when the Stock
+      Entry is submitted, so on a draft item_serial_no names a record that does not exist
+      yet and a plain insert dies with LinkValidationError. Inserted with
+      ignore_links instead: the field holds the name the serial will be given, so the
+      link resolves the moment the receipt is submitted. Link validation still runs when
+      the inspector submits the inspection — verified to throw — so a serial that was
+      never actually received cannot be signed off, and an inspection raised on a draft
+      stays a draft until its receipt is submitted.
+      inspected_by is set explicitly to the session user:
+      the field's "user" default is resolved by the form layer, and frappe.new_doc
+      server-side only resolves "__user", so it would otherwise insert the literal
+      string. Serials are read from the row's own serial_no field falling back to its
+      Serial and Batch Bundle — both carriers occur in live data depending on the Stock
+      Settings 'Use Serial / Batch Fields' toggle. Outgoing rows (s_warehouse set) are
+      skipped, matching the convention in receipt_tag and calibration.
+
+      Idempotent: serials already inspected on this Stock Entry (docstatus < 2) are
+      skipped, so the button can be pressed again and returns an empty list when there
+      is nothing new. A Stock Entry with no serials at all throws instead.
+
+      Readings come from the Item's Quality Inspection Template via ERPNext's own
+      QualityInspection.validate; company is stamped from the Stock Entry. ERPNext's
+      validate_inspection_required does not gate Stock Entry references, so no
+      Item-level inspection flag is needed.
+
+  - id: f011-c002
+    name: Create Quality Inspection button
+    type: client
+    stage: done
+    status_history: open --> done
+    depends_on: [f011-c001]
+    source: itag_quality/stock_entry_inspection.js, hooks.py
+    responsibility: >
+      Stock Entry refresh adds a Create Quality Inspection button when
+      custom_inward_inspection_required is checked, the entry is saved and not cancelled.
+      Saved because the inspections reference it by name; ticking the checkbox dirties
+      the form, so the button appears on the save that follows. On success a green
+      msgprint reports the count and links to
+      /app/quality-inspection?reference_type=Stock Entry&reference_name=<name>, which the
+      desk router opens as a filtered list. When every serial is already inspected the
+      message is an orange "nothing to create" instead. Registered as a fourth Stock
+      Entry entry in doctype_js.
