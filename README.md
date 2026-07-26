@@ -3,6 +3,22 @@
 ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
+### 15.13.2 — 2026-07-26
+
+Calibration plan on the schedule
+Plan is set on the Calibration Schedule, not the Item: Purchase Date, End of Life Date, No of Calibrations replace Periodicity / Start / End / No of Visits.
+Calibrations spread evenly between the two dates, last one on the end of life date; a date on a holiday moves back a day.
+Visits are written only by the Generate Calibration Schedule button — saving the form no longer rewrites the plan. The button needs a saved schedule and disappears after submit.
+Item keeps only Is Calibration Item; the Item Request Form drops to one calibration checkbox.
+Calibration Schedule Item child table deleted — one schedule is one item/serial.
+Deploy: patch drop_item_calibration_config_fields removes the two dead Item fields and the deleted child doctype. Guarded, so it is a no-op on a clean or fresh site.
+
+Quality Inspections from a receipt
+Stock Entry with Quality Verification Required ticked gets a Create Quality Inspection button.
+Raises one draft Incoming Quality Inspection per serial, across every incoming row, then links to the list filtered to that Stock Entry.
+Serials already inspected on that receipt are skipped, so pressing it again is safe.
+Works on a draft receipt — inspection happens before stock is accepted. An inspection raised on a draft can only be submitted once the receipt is, since the serial does not exist as a record until then.
+Readings come from the Item's Quality Inspection Template.
 
 ### 15.13.1 — 2026-07-21
 - Fix a first-deploy install failure in Progress Billing: the migration that backfills existing progress invoices could crash with a database error on a brand-new site.
