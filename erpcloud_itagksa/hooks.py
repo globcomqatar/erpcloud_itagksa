@@ -339,6 +339,7 @@ doc_events = {
 scheduler_events = {
 	"daily": [
 		"erpcloud_itagksa.itag_ksa_buying.tasks.freeze_lapsed_suppliers",
+		"erpcloud_itagksa.itag_quality.tasks.notify_due_calibrations",
 	],
 }
 
@@ -353,6 +354,7 @@ doctype_js = {
 		"itag_stock/stock_entry_tag.js",
 		"itag_quality/stock_entry_inspection.js",
 	],
+	"Quality Inspection": "itag_quality/quality_inspection/quality_inspection.js",
 	"Job Card": "itag_manufacturing/job_card/job_card.js",
 	"Work Order": "itag_manufacturing/work_order/work_order.js",
 	"Purchase Order": "itag_manufacturing/purchase_order/purchase_order.js",
