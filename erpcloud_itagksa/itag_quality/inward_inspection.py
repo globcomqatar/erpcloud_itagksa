@@ -13,6 +13,9 @@ from erpnext.stock.serial_batch_bundle import get_serial_nos_from_bundle
 from frappe import _
 
 
+INSPECTION_ROLE_FIELD = "inward_inspection_role"
+
+
 @frappe.whitelist()
 def create_quality_inspections(stock_entry):
 	"""Create one draft Incoming Quality Inspection per received serial.
@@ -25,20 +28,58 @@ def create_quality_inspections(stock_entry):
 	if source.docstatus == 2:
 		frappe.throw(_("{0} is cancelled.").format(source.name))
 
-	inspected = already_inspected_serials(source.name)
+	if not user_may_inspect():
+		frappe.throw(
+			_("Only the {0} role can create Quality Inspections.").format(inspection_role()),
+			frappe.PermissionError,
+		)
 
-	created = []
-	found_serials = False
-	for row in source.items:
-		for serial_no in received_serials(row):
-			found_serials = True
-			if serial_no not in inspected:
-				created.append(new_inspection(source, row, serial_no).name)
-
-	if not found_serials:
+	if not any(received_serials(row) for row in source.items):
 		frappe.throw(_("No serial numbers on the received rows of {0} to inspect.").format(source.name))
 
-	return created
+	return [new_inspection(source, row, serial_no).name for row, serial_no in pending_serials(source)]
+
+
+@frappe.whitelist()
+def may_create_quality_inspections(stock_entry):
+	"""Whether the Create Quality Inspection button has anything left to offer.
+
+	The form cannot work this out on its own: the serials may sit in a Serial and
+	Batch Bundle rather than on the row, and the configured role lives on a Single
+	the user need not be able to read.
+	"""
+	source = frappe.get_doc("Stock Entry", stock_entry)
+	if source.docstatus == 2 or not user_may_inspect():
+		return False
+
+	return bool(pending_serials(source))
+
+
+def inspection_role():
+	return frappe.db.get_single_value("ITAG KSA Settings", INSPECTION_ROLE_FIELD)
+
+
+def user_may_inspect():
+	"""No configured role means the site has not restricted this yet — stay open.
+
+	Locking everyone out of the receipt flow until someone fills in a setting would
+	be a worse failure than leaving it as it was before the setting existed.
+	"""
+	role = inspection_role()
+	if not role:
+		return True
+	return role in frappe.get_roles()
+
+
+def pending_serials(source):
+	"""Received serials still without an inspection, each paired with its row."""
+	inspected = already_inspected_serials(source.name)
+	return [
+		(row, serial_no)
+		for row in source.items
+		for serial_no in received_serials(row)
+		if serial_no not in inspected
+	]
 
 
 def received_serials(row):

@@ -5,11 +5,22 @@ frappe.ui.form.on("Stock Entry", {
 	refresh(frm) {
 		// The inspections reference the Stock Entry, so it has to exist first; ticking
 		// the checkbox dirties the form and the button appears once it is saved.
-		if (frm.doc.custom_inward_inspection_required && !frm.is_new() && frm.doc.docstatus < 2) {
-			frm.add_custom_button(__("Create Quality Inspection"), () =>
-				create_quality_inspections(frm)
-			);
+		if (!frm.doc.custom_inward_inspection_required || frm.is_new() || frm.doc.docstatus === 2) {
+			return;
 		}
+
+		// Whether anything is left to inspect, and whether this user is allowed to,
+		// are both server-side questions — the button is added once they come back.
+		frappe.call({
+			method: "erpcloud_itagksa.itag_quality.inward_inspection.may_create_quality_inspections",
+			args: { stock_entry: frm.doc.name },
+		}).then((r) => {
+			if (r.message) {
+				frm.add_custom_button(__("Create Quality Inspection"), () =>
+					create_quality_inspections(frm)
+				);
+			}
+		});
 	},
 });
 
@@ -21,6 +32,8 @@ function create_quality_inspections(frm) {
 		freeze_message: __("Creating Quality Inspections"),
 	}).then((r) => {
 		const created = r.message || [];
+		// Every serial now has an inspection, so the button has nothing left to do.
+		frm.refresh();
 		if (!created.length) {
 			frappe.msgprint({
 				title: __("Nothing to Create"),

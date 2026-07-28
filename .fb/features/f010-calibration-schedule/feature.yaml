@@ -31,7 +31,7 @@ description: >
   dates. Generation is button-driven only. The Calibration Schedule Item child table
   is deleted; the Item keeps just the is-calibration-item flag.
 
-status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done --> extended --> done --> restructured --> done
+status_history: open --> working --> done --> reworked --> done --> extended --> done --> pivoted-to-custom-doctype --> done --> extended --> done --> restructured --> done --> working --> done
 created: 2026-07-08
 
 components:
@@ -54,7 +54,7 @@ components:
     name: Schedule generation controller
     type: controller
     stage: done
-    status_history: open --> done --> restructured --> done
+    status_history: open --> done --> restructured --> done --> working --> done
     depends_on: [f010-c001]
     source: itag_quality/doctype/calibration_schedule/calibration_schedule.py, itag_quality/doctype/calibration_schedule/calibration_schedule.js
     responsibility: >
@@ -63,7 +63,8 @@ components:
       one landing on end_of_life_date, each pulled back off a holiday (list from the
       employee, or the company default; fetched once per run). Client set_query
       restricts serial_no to the header's item_code. Rewritten in c008 — the ported
-      Maintenance Schedule periodicity logic is gone.
+      Maintenance Schedule periodicity logic is gone. Even spacing superseded in c009:
+      dates now step out from purchase_date by a Frequency select.
 
   - id: f010-c003
     name: Auto-raise schedule on receipt
@@ -213,3 +214,70 @@ components:
       Calibration Schedule Item doctype, which migrate leaves orphaned when an app drops
       it; both are guarded so the patch is a no-op on a site already clean or freshly
       installed.
+
+  - id: f010-c009
+    name: Frequency-driven calibration count
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-28
+    depends_on: [f010-c001, f010-c002, f010-c008]
+    source: itag_quality/doctype/calibration_schedule/calibration_schedule.json, itag_quality/doctype/calibration_schedule/calibration_schedule.py
+    responsibility: >
+      Inverts the c008 scheduling input. Frequency (Select: Daily / Weekly / Monthly /
+      Yearly) sits after end_of_life_date and drives the plan; no_of_calibrations is
+      now read-only and computed, not typed. validate() recomputes it on every draft
+      save (0 until purchase_date, end_of_life_date and frequency are all set), so the
+      count always matches the dates on screen.
+
+      Dates step out from purchase_date by the frequency and stop at the last one
+      landing on or before end_of_life_date — a window that does not divide evenly now
+      stops short of retirement instead of the c008 behaviour of always landing the
+      final calibration exactly on end_of_life_date. Each date is measured from
+      purchase_date as an nth multiple, never chained off the previous date: chaining
+      add_months clamps a month-end (Jan 31 -> Feb 29) and then drifts backwards
+      permanently (Mar 29, Apr 29 ...), while the anchored form recovers to the 31st.
+      Holiday pull-back is unchanged.
+
+      Partially reverses c008's removal of periodicity, but the plan stays on the
+      schedule — the Item calibration-config fields dropped by c008 are NOT reinstated.
+      MAX_CALIBRATIONS = 500 guards a Daily frequency across a long equipment life,
+      which would otherwise generate thousands of visit rows (Daily over 5 years is
+      ~1826). generate_schedule requires Frequency instead of a typed count and reports
+      when no calibration falls due inside the window.
+
+  - id: f010-c010
+    name: Calibration visit due reminder
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-28
+    depends_on: [f010-c001, f010-c009]
+    source: itag_quality/tasks.py, hooks.py, itag_manufacturing/doctype/itag_ksa_settings/itag_ksa_settings.json, patches/create_calibration_visit_due_notification.py, patches.txt
+    responsibility: >
+      Daily reminder on calibration visits coming due. A stock Notification cannot do
+      this: its Document Type link is filtered istable = 0 (notification.js), so
+      Calibration Schedule Detail is unpickable, and the Days Before date field lists
+      only the parent's own date fields, so scheduled_date is unreachable. Verified in
+      the frappe v15 source, not assumed.
+
+      notify_due_calibrations (scheduler_events.daily) groups Pending visits whose
+      scheduled_date equals today + lead time by their schedule, skips any parent not
+      submitted, and calls run_notifications("calibration_visit_due") on it. That hits
+      the native Method event branch (frappe/model/document.py:1074, matching on
+      document_type + method), so the subject, message and recipients stay editable in
+      the UI instead of being frozen in Python. One notification per schedule, not per
+      visit. The due rows are stashed on the doc as due_visits for the template, since
+      the Jinja doc is the parent and its rows span the whole plan.
+
+      Lead time is ITAG KSA Settings.calibration_reminder_days (Int, default 7, new
+      Calibration section), falling back to 7 when unset or below 1.
+
+      Patch create_calibration_visit_due_notification (post_model_sync) seeds the
+      "Calibration Visit Due" Notification create-if-missing, so admin edits survive a
+      re-run — a Notification is a master record, not a fixture. The Quality Manager
+      recipient row is added only when that Role exists, so a site without the ERPNext
+      quality roles does not fail link validation on insert. Template uses
+      frappe.utils.formatdate: the notification Jinja context exposes frappe as a
+      namedtuple carrying only utils (notification.py:556-562), so frappe.format is
+      not available there.
