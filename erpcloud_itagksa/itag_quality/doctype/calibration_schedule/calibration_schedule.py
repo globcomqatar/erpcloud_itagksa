@@ -4,9 +4,16 @@
 import frappe
 from frappe import _, throw
 from frappe.model.document import Document
-from frappe.utils import add_days, cint, getdate, today
+from frappe.utils import add_days, add_months, cint, getdate, today
 
 from erpnext.setup.doctype.employee.employee import get_holiday_list_for_employee
+
+FREQUENCY_STEP_DAYS = {"Daily": 1, "Weekly": 7}
+FREQUENCY_STEP_MONTHS = {"Monthly": 1, "Yearly": 12}
+
+# A daily frequency across a long equipment life would generate thousands of visit
+# rows and make the form unusable. Past this the dates or the frequency are wrong.
+MAX_CALIBRATIONS = 500
 
 
 class CalibrationSchedule(Document):
@@ -14,6 +21,7 @@ class CalibrationSchedule(Document):
 		if self.docstatus == 0:
 			self.fill_item_tag()
 		self.validate_calibration_window()
+		self.set_no_of_calibrations()
 
 	def fill_item_tag(self):
 		"""Copy the serial's Item Tag onto the header (read-only display field).
@@ -32,6 +40,47 @@ class CalibrationSchedule(Document):
 			and getdate(self.purchase_date) >= getdate(self.end_of_life_date)
 		):
 			throw(_("End of Life Date must be after Purchase Date"))
+
+	def set_no_of_calibrations(self):
+		"""Keep the read-only count in step with the frequency and the date window."""
+		if not (self.purchase_date and self.end_of_life_date and self.frequency):
+			self.no_of_calibrations = 0
+			return
+		self.no_of_calibrations = len(self.calibration_dates())
+
+	def calibration_dates(self):
+		"""Step out from the purchase date by the frequency until end of life.
+
+		The last calibration is the final step that still lands on or before the
+		end-of-life date, so a window that does not divide evenly stops short of it
+		rather than overshooting into retirement.
+		"""
+		purchase_date = getdate(self.purchase_date)
+		end_of_life_date = getdate(self.end_of_life_date)
+
+		dates = []
+		while True:
+			scheduled_date = self.nth_date(purchase_date, len(dates) + 1)
+			if scheduled_date > end_of_life_date:
+				return dates
+			dates.append(scheduled_date)
+			if len(dates) > MAX_CALIBRATIONS:
+				throw(
+					_("More than {0} calibrations fall due at {1} frequency. Widen the frequency or shorten the date range.").format(
+						MAX_CALIBRATIONS, _(self.frequency)
+					)
+				)
+
+	def nth_date(self, purchase_date, n):
+		"""The nth calibration date, always measured from the purchase date.
+
+		Counting off the anchor rather than the previous date keeps a month-end
+		purchase from drifting backwards: a 31st clamps to 29 in February but
+		returns to the 31st the month after.
+		"""
+		if self.frequency in FREQUENCY_STEP_DAYS:
+			return getdate(add_days(purchase_date, FREQUENCY_STEP_DAYS[self.frequency] * n))
+		return getdate(add_months(purchase_date, FREQUENCY_STEP_MONTHS[self.frequency] * n))
 
 	def on_submit(self):
 		if not self.get("schedules"):
@@ -81,28 +130,19 @@ class CalibrationSchedule(Document):
 	def validate_generation_inputs(self):
 		if not self.purchase_date or not self.end_of_life_date:
 			throw(_("Set Purchase Date and End of Life Date before generating the schedule"))
-		if cint(self.no_of_calibrations) < 1:
-			throw(_("Set how many calibrations are due between those two dates"))
+		if not self.frequency:
+			throw(_("Set the Frequency before generating the schedule"))
 		self.validate_calibration_window()
+		if cint(self.no_of_calibrations) < 1:
+			throw(_("No calibration falls due at {0} frequency before the End of Life Date").format(_(self.frequency)))
 
 	def create_schedule_list(self):
-		"""Space the calibrations evenly between purchase and end of life.
+		"""Space the calibrations by the frequency, from the purchase date.
 
-		The last one lands on the end-of-life date. A date falling on a holiday is
-		pulled back to the working day before it.
+		A date falling on a holiday is pulled back to the working day before it.
 		"""
-		purchase_date = getdate(self.purchase_date)
-		end_of_life_date = getdate(self.end_of_life_date)
-		count = cint(self.no_of_calibrations)
-		days_between_calibrations = (end_of_life_date - purchase_date).days / count
 		holidays = self.get_holidays()
-
-		schedule_list = []
-		for calibration in range(1, count + 1):
-			scheduled_date = add_days(purchase_date, round(days_between_calibrations * calibration))
-			schedule_list.append(avoid_holidays(getdate(scheduled_date), holidays))
-
-		return schedule_list
+		return [avoid_holidays(scheduled_date, holidays) for scheduled_date in self.calibration_dates()]
 
 	def get_holidays(self):
 		holiday_list = (
