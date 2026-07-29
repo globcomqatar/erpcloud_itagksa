@@ -36,7 +36,7 @@ features:
     title: CPI GRN Default Target Warehouse + QV Label
     status: done
     depends_on: [f001]
-    components: 3
+    components: 6
   - fid: f004
     slug: calibration-collaboration-service-po
   - fid: f005
@@ -78,11 +78,11 @@ features:
     title: Calibration via custom Calibration Schedule
     status: done
     depends_on: [f007]
-    components: 8
+    components: 10
   - fid: f011
     slug: inward-quality-inspection
     module: itag_quality
     title: Inward Quality Inspection per serial on a Stock Entry
     status: done
     depends_on: [f002, f003]
-    components: 2
+    components: 4

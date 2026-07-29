@@ -25,6 +25,7 @@
   "column_break_item",
   "purchase_date",
   "end_of_life_date",
+  "frequency",
   "no_of_calibrations",
   "generate_schedule",
   "schedules_section",
@@ -144,16 +145,24 @@
    "reqd": 1
   },
   {
-   "description": "When the equipment retires. The last calibration lands on this date.",
+   "description": "When the equipment retires. Calibrations stop on or before this date.",
    "fieldname": "end_of_life_date",
    "fieldtype": "Date",
    "label": "End of Life Date"
   },
   {
-   "description": "How many calibrations fall between the purchase and end of life dates.",
+   "description": "How often the equipment is calibrated. Drives the number of calibrations.",
+   "fieldname": "frequency",
+   "fieldtype": "Select",
+   "label": "Frequency",
+   "options": "\nDaily\nWeekly\nMonthly\nYearly"
+  },
+  {
+   "description": "Computed from Frequency: how many calibrations fit between the purchase and end of life dates.",
    "fieldname": "no_of_calibrations",
    "fieldtype": "Int",
-   "label": "No of Calibrations"
+   "label": "No of Calibrations",
+   "read_only": 1
   },
   {
    "fieldname": "employee",

@@ -9,7 +9,11 @@
   "default_target_warehouse",
   "supplier_section",
   "default_supplier_store",
-  "reevaluation_role"
+  "reevaluation_role",
+  "quality_section",
+  "inward_inspection_role",
+  "calibration_section",
+  "calibration_reminder_days"
  ],
  "fields": [
   {
@@ -41,6 +45,31 @@
    "fieldtype": "Link",
    "label": "Re-Evaluation Role",
    "options": "Role"
+  },
+  {
+   "fieldname": "quality_section",
+   "fieldtype": "Section Break",
+   "label": "Quality"
+  },
+  {
+   "description": "Role allowed to create the inward Quality Inspections on a Stock Entry. Left empty, anyone with access to the Stock Entry can create them.",
+   "fieldname": "inward_inspection_role",
+   "fieldtype": "Link",
+   "label": "Inward Inspection Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "calibration_section",
+   "fieldtype": "Section Break",
+   "label": "Calibration"
+  },
+  {
+   "default": "7",
+   "description": "How many days before a calibration visit the reminder is sent. Edit the subject, message and recipients on the \"Calibration Visit Due\" Notification.",
+   "fieldname": "calibration_reminder_days",
+   "fieldtype": "Int",
+   "label": "Calibration Reminder Days",
+   "non_negative": 1
   }
  ],
  "grid_page_length": 50,

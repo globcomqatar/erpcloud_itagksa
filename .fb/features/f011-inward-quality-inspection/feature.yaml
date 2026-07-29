@@ -80,4 +80,42 @@ components:
       /app/quality-inspection?reference_type=Stock Entry&reference_name=<name>, which the
       desk router opens as a filtered list. When every serial is already inspected the
       message is an orange "nothing to create" instead. Registered as a fourth Stock
-      Entry entry in doctype_js.
+      Entry entry in doctype_js. Superseded in c003: the button is now added only when
+      the server says there is something left to inspect and the user holds the role.
+
+  - id: f011-c003
+    name: Button hidden when done or unauthorised
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-28
+    depends_on: [f011-c001, f011-c002]
+    source: itag_quality/inward_inspection.py, itag_quality/stock_entry_inspection.js, itag_manufacturing/doctype/itag_ksa_settings/
+    responsibility: >
+      New whitelisted may_create_quality_inspections(stock_entry) answers both questions
+      the form cannot: pending_serials(source) is empty once every received serial has an
+      inspection, and user_may_inspect() checks the new ITAG KSA Settings field
+      inward_inspection_role (Link -> Role) against frappe.get_roles(). The form calls it
+      on refresh and only then adds the button, and calls frm.refresh() after creating so
+      the button clears itself. An empty role setting stays open — the alternative locks
+      every user out of the receipt flow until someone fills the field in.
+
+      create_quality_inspections enforces the same role with a PermissionError: the
+      whitelisted method is reachable regardless of what the form drew. Serials live in a
+      Serial and Batch Bundle as often as on the row, so the pending count cannot be
+      worked out client-side.
+
+  - id: f011-c004
+    name: Return to the Stock Entry on submit
+    type: client
+    stage: done
+    status_history: open --> done
+    created: 2026-07-28
+    depends_on: [f011-c001]
+    source: itag_quality/quality_inspection/quality_inspection.js, hooks.py
+    responsibility: >
+      Quality Inspection on_submit routes back to the referenced Stock Entry when
+      reference_type is Stock Entry — the inspector is working through one receipt's
+      serials, so landing back on the receipt is the next step rather than the submitted
+      inspection. Inspections referencing anything else are left where they are. First
+      Quality Inspection entry in doctype_js.

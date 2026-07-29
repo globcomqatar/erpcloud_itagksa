@@ -10,9 +10,14 @@
 
 const MATERIAL_RECEIPT_CPI = 'Material Receipt - CPI';
 
+// Both are switched on by the Sales Order mapper (create_material_receipt_from_sales_order)
+// and drive the inspection and Work Order gates downstream.
+const SALES_ORDER_SET_FLAGS = ['custom_inward_inspection_required', 'custom_subcontracted_job'];
+
 frappe.ui.form.on('Stock Entry', {
     refresh: function(frm) {
         apply_cpi_default_warehouse(frm);
+        lock_sales_order_flags(frm);
 
         // Re-apply lock on form load for CPI checkboxes
         if (frm.doc.custom_customer_property_grn || frm.doc.custom_customer_property_return) {
@@ -64,6 +69,17 @@ frappe.ui.form.on('Stock Entry', {
         }
     }
 });
+
+function lock_sales_order_flags(frm) {
+    // A receipt raised from a Sales Order carries these flags from the mapper, so
+    // clearing them would silently break the inspection and Work Order gates. On a
+    // standalone entry they stay editable.
+    const raised_from_sales_order = Boolean(frm.doc.custom_customer_sales_order_number);
+
+    SALES_ORDER_SET_FLAGS.forEach(function(fieldname) {
+        frm.set_df_property(fieldname, 'read_only', raised_from_sales_order && frm.doc[fieldname] ? 1 : 0);
+    });
+}
 
 frappe.ui.form.on('Stock Entry Detail', {
     items_add: function(frm, cdt, cdn) {

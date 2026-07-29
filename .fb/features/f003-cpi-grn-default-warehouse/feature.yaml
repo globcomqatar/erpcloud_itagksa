@@ -67,6 +67,23 @@ components:
       Required", description "Only for customer property items". Fieldname
       unchanged (no data impact, doc_events/JS refs preserved).
 
+  - id: f003-c006
+    name: Lock the Sales Order-set CPI flags
+    type: client_script
+    stage: done
+    status_history: open --> done
+    created: 2026-07-28
+    depends_on: [f003-c003]
+    source: itag_manufacturing/stock_entry/stock_entry.js
+    responsibility: >
+      lock_sales_order_flags makes "Quality Verification Required"
+      (custom_inward_inspection_required) and "Inward Subcontract (Service Work
+      Order)" (custom_subcontracted_job) read-only on a Stock Entry raised from a
+      Sales Order — both are set by the f001 mapper and gate the inward inspection
+      and the Work Order GRN check, so clearing them breaks those downstream.
+      Keyed on custom_customer_sales_order_number being set, so the flags stay
+      editable on a standalone Stock Entry. Called from refresh.
+
   - id: f003-c005
     name: Default Supplier Store setting + MR/PO prefill
     type: controller
