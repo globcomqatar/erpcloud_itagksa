@@ -146,3 +146,38 @@ components:
       The two register helpers each set their own link fields and return their item name;
       stock_entry and purchase_receipt build the Quality group from what they support,
       so the Purchase Receipt dashboard is untouched.
+
+  - id: f011-c006
+    name: Serial stored in a Select, not the Serial No link
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-29
+    depends_on: [f011-c001]
+    source: itag_quality/inward_inspection.py, itag_quality/quality_inspection/quality_inspection.js, install.py, hooks.py
+    responsibility: >
+      The received serial now goes in custom_inward_serial_no (Select) instead of the
+      standard item_serial_no (Link -> Serial No). Inspection happens on the draft receipt,
+      before the Serial No records exist, so the Link field threw "does not exist" the
+      moment an inspector touched the serial and saved. c001 only worked around this at
+      insert time with ignore_links; the form has no such lever, so every later save failed.
+      A Select has no target to resolve and stores the text as-is: base_document.py:894
+      skips option validation when the docfield carries no options, which this one does not.
+
+      custom_inward_serial_no is owned by quality_itagksa (module Quality ITAG KSA), which
+      fills its options client-side for Job Card references and blanks them for everything
+      else. It is deliberately NOT in this app's fixtures: fixtures upsert by name, so
+      shipping it would rewrite the record's module and leave whichever app migrated last
+      as the owner. install.after_migrate calls create_custom_field instead, which inserts
+      only when no field of that fieldname exists — so the live record is untouched here and
+      the field still gets created on a site without quality_itagksa.
+
+      The form sets the Select's options to the stored value and locks both serial fields
+      for Stock Entry references, in refresh rather than onload because quality_itagksa's
+      onload clears the options first. item_serial_no is locked rather than hidden so
+      inspections raised before this change still show the serial they hold.
+
+      already_inspected_serials reads both fields for the same reason — reading only the
+      new one would re-offer those serials and duplicate their inspections. ignore_links
+      stays on insert: batch_no is a Link to Batch, and a batch named on a draft receipt is
+      only created when that receipt is submitted.

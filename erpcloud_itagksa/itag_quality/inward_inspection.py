@@ -14,6 +14,7 @@ from frappe import _
 
 
 INSPECTION_ROLE_FIELD = "inward_inspection_role"
+SERIAL_FIELD = "custom_inward_serial_no"
 
 
 @frappe.whitelist()
@@ -95,17 +96,27 @@ def received_serials(row):
 
 
 def already_inspected_serials(stock_entry):
-	return set(
-		frappe.get_all(
-			"Quality Inspection",
-			filters={
-				"reference_type": "Stock Entry",
-				"reference_name": stock_entry,
-				"docstatus": ("<", 2),
-			},
-			pluck="item_serial_no",
-		)
+	"""Serials on this Stock Entry that an inspection already covers.
+
+	item_serial_no is read alongside the inward field because inspections raised before
+	the serial moved off the standard Link field still carry it there — reading only the
+	new field would offer those serials again and duplicate their inspections.
+	"""
+	inspections = frappe.get_all(
+		"Quality Inspection",
+		filters={
+			"reference_type": "Stock Entry",
+			"reference_name": stock_entry,
+			"docstatus": ("<", 2),
+		},
+		fields=[SERIAL_FIELD, "item_serial_no"],
 	)
+	return {
+		serial
+		for inspection in inspections
+		for serial in (inspection.get(SERIAL_FIELD), inspection.item_serial_no)
+		if serial
+	}
 
 
 def new_inspection(source, row, serial_no):
@@ -114,18 +125,21 @@ def new_inspection(source, row, serial_no):
 	Left as a draft: the inspector fills the readings and submits, which is what
 	decides Accepted or Rejected.
 
-	Inserted with ignore_links because inspection happens on the draft receipt, before
-	the Stock Entry is submitted and the Serial No records exist. item_serial_no holds
-	the name the serial will be given, so the link resolves once the receipt is
-	submitted. Link validation still runs when the inspector submits the inspection,
-	which keeps a serial that was never actually received from being signed off.
+	The serial goes in custom_inward_serial_no, not the standard item_serial_no.
+	Inspection happens on the draft receipt, before the Stock Entry is submitted and the
+	Serial No records exist, so the standard Link field rejects the serial as missing —
+	on save and again every time the inspector touches it. A Select field holds the same
+	text with no link to resolve.
+
+	Inserted with ignore_links because batch_no has the same problem: a batch named on a
+	draft receipt is only created as a Batch record when that receipt is submitted.
 	"""
 	inspection = frappe.new_doc("Quality Inspection")
 	inspection.inspection_type = "Incoming"
 	inspection.reference_type = "Stock Entry"
 	inspection.reference_name = source.name
 	inspection.item_code = row.item_code
-	inspection.item_serial_no = serial_no
+	inspection.set(SERIAL_FIELD, serial_no)
 	inspection.batch_no = row.batch_no
 	inspection.sample_size = 1
 	inspection.company = source.company

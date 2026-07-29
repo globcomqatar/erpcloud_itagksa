@@ -89,4 +89,4 @@ features:
     title: Inward Quality Inspection per serial on a Stock Entry
     status: done
     depends_on: [f002, f003]
-    components: 5
+    components: 6
