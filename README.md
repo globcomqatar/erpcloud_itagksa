@@ -3,6 +3,29 @@
 ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
+
+### 15.13.3 — 2026-07-29
+
+Calibration frequency
+•	Calibration Schedule has a Frequency select (Daily / Weekly / Monthly / Yearly) after End of Life Date.
+•	No of Calibrations is computed from it and read-only; the generated visits are spaced by the same interval.
+•	The last visit is the last one that fits on or before end of life, so it no longer always lands exactly on that date.
+•	Existing submitted schedules have no Frequency; they still save, and generate_schedule asks for one.
+
+Calibration due reminder
+•	A daily task emails a "Calibration Visit Due" Notification per schedule for visits due after the lead time.
+•	Lead time: ITAG KSA Settings > Calibration Reminder Days (default 7). Subject, message and recipients stay editable on the Notification itself.
+•	Deploy: bench migrate — a patch seeds the Notification if it is missing.
+
+Inward inspection
+•	Create Quality Inspection appears only while serials remain uninspected, and only for ITAG KSA Settings > Inward Inspection Role. Empty role = open to everyone, as before.
+•	Submitting an inward inspection returns to its Stock Entry.
+•	On a receipt raised from a Sales Order, Quality Verification Required and Inward Subcontract are read-only — the mapper sets both and they gate later steps.
+Not yet run against a site: no migrate, no manual test. Python, JS and DocType JSON checked only.
+
+<img width="936" height="1006" alt="image" src="https://github.com/user-attachments/assets/fdc7f72a-b005-4c02-9897-f1e989ac11e8" />
+
+
 ### 15.13.2 — 2026-07-26
 
 Calibration plan on the schedule
