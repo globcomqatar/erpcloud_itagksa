@@ -23,9 +23,6 @@ Inward inspection
 •	On a receipt raised from a Sales Order, Quality Verification Required and Inward Subcontract are read-only — the mapper sets both and they gate later steps.
 Not yet run against a site: no migrate, no manual test. Python, JS and DocType JSON checked only.
 
-<img width="936" height="1006" alt="image" src="https://github.com/user-attachments/assets/fdc7f72a-b005-4c02-9897-f1e989ac11e8" />
-
-
 ### 15.13.2 — 2026-07-26
 
 Calibration plan on the schedule
