@@ -119,3 +119,30 @@ components:
       serials, so landing back on the receipt is the next step rather than the submitted
       inspection. Inspections referencing anything else are left where they are. First
       Quality Inspection entry in doctype_js.
+
+  - id: f011-c005
+    name: Quality Inspection in Stock Entry Connections
+    type: controller
+    stage: done
+    status_history: open --> done
+    created: 2026-07-29
+    depends_on: [f011-c001]
+    source: itag_quality/calibration_dashboard.py
+    responsibility: >
+      The Stock Entry Connections tab now counts and links the Quality Inspections raised
+      from the receipt, next to the Calibration Schedule already there. Both live in the
+      same "Quality" group.
+
+      A Quality Inspection names its voucher with the reference_type / reference_name
+      pair, not a plain Link, so non_standard_fieldnames alone is not enough — it would
+      match on reference_name only and count an inspection belonging to a Purchase
+      Receipt that happens to share the name. The dynamic_links entry
+      {"reference_name": ["Stock Entry", "reference_type"]} pins the doctype. Frappe
+      honours it in both places that matter: the count in
+      desk/notifications.py::get_dynamic_link_filters and the click-through filter in
+      form/dashboard.js::get_document_filter.
+
+      No hooks.py change — override_doctype_dashboards already routes Stock Entry here.
+      The two register helpers each set their own link fields and return their item name;
+      stock_entry and purchase_receipt build the Quality group from what they support,
+      so the Purchase Receipt dashboard is untouched.

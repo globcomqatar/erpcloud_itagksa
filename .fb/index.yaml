@@ -39,14 +39,18 @@ features:
     components: 6
   - fid: f004
     slug: calibration-collaboration-service-po
-  - fid: f005
-    slug: item-type-backfill
     module: itag_manufacturing
     title: Calibration / Collaboration Service PO
     status: done
     origin: erpcloud_itagqatar
     depends_on: [f003]
     components: 12
+  - fid: f005
+    slug: item-type-backfill
+    module: itag_quality
+    title: Item Type Backfill from Header Flags
+    status: done
+    components: 1
   - fid: f006
     slug: supplier-approval-reevaluation
     module: itag_ksa_buying
@@ -71,7 +75,7 @@ features:
     module: itag_stock
     title: Item Request Form + Approval
     status: done
-    components: 2
+    components: 4
   - fid: f010
     slug: calibration-schedule
     module: itag_quality
@@ -85,4 +89,4 @@ features:
     title: Inward Quality Inspection per serial on a Stock Entry
     status: done
     depends_on: [f002, f003]
-    components: 4
+    components: 5
