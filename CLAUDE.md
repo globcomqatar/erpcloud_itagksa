@@ -36,6 +36,10 @@ one screen it is too long. The reviewer reads the diff for detail — the PR bod
 - Skip the rationale unless a decision looks wrong without it — then one clause, not a paragraph.
 - Verify steps: numbered, one action each, only the paths a reviewer would actually click.
 - No "Notes" section restating the release rule, and no closing summary.
+- **Never mention `.fb/` in a PR.** No section, bullet, or Verify step about feature records,
+  component rows, or index repairs. `.fb/` is BMAD bookkeeping — it is not a user-facing change
+  and the reviewer has no action to take on it. It is gitignored and untracked (see below), so
+  it will not appear in a diff either; keep it out of the title and body too.
 
 Template:
 
@@ -49,6 +53,14 @@ Template:
 1. <action → expected result>
 2. <action → expected result>
 ```
+
+---
+
+## `.fb/` is local-only
+- `.fb/` is BMAD state — feature records and component rows that drive the bench dashboard
+  and `bmad-fb-sync`. It is **gitignored and untracked**: it describes how the work was done,
+  not what the app does, and it churns on every task, which buries real diffs.
+- Keep writing it as normal. It just never reaches a commit, a diff, or a PR.
 
 ---
 

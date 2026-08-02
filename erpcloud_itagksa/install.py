@@ -1,8 +1,15 @@
 import json
 
 import frappe
+from frappe.custom.doctype.custom_field.custom_field import create_custom_field
 
 CASH_SUPPLIER = "Cash Supplier"
+INWARD_SERIAL_FIELD = {
+	"fieldname": "custom_inward_serial_no",
+	"label": "Inward Serial No",
+	"fieldtype": "Select",
+	"insert_after": "reference_name",
+}
 
 
 def before_install():
@@ -17,6 +24,27 @@ def before_install():
 def after_install():
 	"""Run after this app's fixtures are synced during a fresh install."""
 	ensure_cash_supplier()
+
+
+def after_migrate():
+	ensure_inward_serial_field()
+
+
+def ensure_inward_serial_field():
+	"""Seed the Quality Inspection serial field unless another app already ships it.
+
+	The inward flow stores the received serial in a Select rather than the standard
+	item_serial_no: inspection happens on the draft receipt, before the Serial No
+	records exist, and a Link field can only reject a target that is not there yet.
+
+	quality_itagksa ships this same field for its Job Card flow, so it is deliberately
+	not one of our fixtures — a fixture upserts by name and would reassign the field to
+	this app, leaving whichever app migrates last as the owner. create_custom_field
+	inserts only when no Custom Field with this fieldname exists, so the live record
+	and its owner are never touched.
+	"""
+	if create_custom_field("Quality Inspection", INWARD_SERIAL_FIELD):
+		frappe.db.commit()
 
 
 def ensure_cash_supplier():

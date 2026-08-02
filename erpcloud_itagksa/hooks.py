@@ -87,6 +87,7 @@ app_include_js = "/assets/erpcloud_itagksa/js/collab_serial.js"
 
 before_install = "erpcloud_itagksa.install.before_install"
 after_install = "erpcloud_itagksa.install.after_install"
+after_migrate = "erpcloud_itagksa.install.after_migrate"
 
 # Uninstallation
 # ------------
