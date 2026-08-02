@@ -4,6 +4,25 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.4 — 2026-08-02
+
+Quality Inspection in Stock Entry Connections
+
+The Connections tab on a Stock Entry now counts and links the Quality Inspections raised from that receipt, in the same Quality group as Calibration Schedule.
+Clicking through opens the inspection list filtered to that Stock Entry.
+Quality Inspection points at its voucher with the reference_type / reference_name pair, so the link needs dynamic_links — without it the count would match on reference_name alone and pick up inspections belonging to other doctypes.
+Purchase Receipt connections are unchanged.
+No hooks.py change: override_doctype_dashboards already routed Stock Entry here.
+
+Inward serial no longer errors as "does not exist"
+
+Saving an inward Quality Inspection failed with "Serial No does not exist": inspection happens on the draft receipt, before the Serial No records are created, and item_serial_no is a Link to Serial No.
+The serial is now stored in custom_inward_serial_no, a Select, which has nothing to resolve. Both serial fields are read-only on a Stock Entry inspection — the serial is fixed when the inspection is raised.
+Inspections created before this change are still recognised, so pressing Create Quality Inspection again will not duplicate them.
+custom_inward_serial_no belongs to quality_itagksa and is deliberately not in this app's fixtures — a fixture upserts by name and would reassign the field's module, leaving whichever app migrated last as its owner. after_migrate creates the field only when no app has already, so sites without quality_itagksa still get it.
+Deploy: bench migrate then bench build — the fix touches a client script.
+
+
 ### 15.13.3 — 2026-07-29
 
 Calibration frequency
