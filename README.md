@@ -22,6 +22,13 @@ Inspections created before this change are still recognised, so pressing Create 
 custom_inward_serial_no belongs to quality_itagksa and is deliberately not in this app's fixtures — a fixture upserts by name and would reassign the field's module, leaving whichever app migrated last as its owner. after_migrate creates the field only when no app has already, so sites without quality_itagksa still get it.
 Deploy: bench migrate then bench build — the fix touches a client script.
 
+Inward inspection button
+
+The Create Quality Inspection button no longer disappears on a flagged Stock Entry that has no serials on it yet.
+It still disappears once every received serial carries an inspection — that behaviour is unchanged.
+Pressing it with no serials entered reports "No serial numbers on the received rows ... to inspect" instead of leaving the user with no button to find.
+
+
 
 ### 15.13.3 — 2026-07-29
 
