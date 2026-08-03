@@ -42,7 +42,7 @@ def create_quality_inspections(stock_entry):
 
 
 @frappe.whitelist()
-def may_create_quality_inspections(stock_entry):
+def may_create_quality_inspections(stock_entry=None):
 	"""Whether the Create Quality Inspection button should be offered.
 
 	The button goes away only once every received serial already carries an inspection.
@@ -53,7 +53,15 @@ def may_create_quality_inspections(stock_entry):
 	The form cannot work this out on its own: the serials may sit in a Serial and
 	Batch Bundle rather than on the row, and the configured role lives on a Single
 	the user need not be able to read.
+
+	No stock_entry means the form is asking about an entry the server cannot read yet —
+	one that is new or carries unsaved changes. Only the role is answerable then; the
+	button saves the entry before it creates anything, and the serial check runs on
+	create.
 	"""
+	if not stock_entry:
+		return user_may_inspect()
+
 	source = frappe.get_doc("Stock Entry", stock_entry)
 	if source.docstatus == 2 or not user_may_inspect():
 		return False
