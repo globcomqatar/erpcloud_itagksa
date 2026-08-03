@@ -43,7 +43,12 @@ def create_quality_inspections(stock_entry):
 
 @frappe.whitelist()
 def may_create_quality_inspections(stock_entry):
-	"""Whether the Create Quality Inspection button has anything left to offer.
+	"""Whether the Create Quality Inspection button should be offered.
+
+	The button goes away only once every received serial already carries an inspection.
+	An entry with no serials on it yet keeps the button — the serials are entered as the
+	receipt is worked on, and pressing it before then reports that there is nothing to
+	inspect rather than leaving the user with no button to find.
 
 	The form cannot work this out on its own: the serials may sit in a Serial and
 	Batch Bundle rather than on the row, and the configured role lives on a Single
@@ -52,6 +57,9 @@ def may_create_quality_inspections(stock_entry):
 	source = frappe.get_doc("Stock Entry", stock_entry)
 	if source.docstatus == 2 or not user_may_inspect():
 		return False
+
+	if not any(received_serials(row) for row in source.items):
+		return True
 
 	return bool(pending_serials(source))
 
