@@ -1,0 +1,204 @@
+[
+ {
+  "cards": [
+   {
+    "card": "Total Incoming Payment",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Total Outgoing Payment",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Total Outgoing Bills",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Total Incoming Bills",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Annual Sales",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Sales Orders to Deliver",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Sales Orders to Bill",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Active Customers",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Annual Purchase",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Purchase Orders to Receive",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Purchase Orders to Bill",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Active Suppliers",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Monthly Total Work Order",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Monthly Completed Work Order",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Ongoing Job Card",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   },
+   {
+    "card": "Monthly Quality Inspection",
+    "parent": "CEO Dashboard",
+    "parentfield": "cards",
+    "parenttype": "Dashboard"
+   }
+  ],
+  "chart_options": null,
+  "charts": [
+   {
+    "chart": "Profit and Loss",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Full"
+   },
+   {
+    "chart": "Bank Balance",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Full"
+   },
+   {
+    "chart": "Accounts Receivable Ageing",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Accounts Payable Ageing",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Sales Order Trends",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Full"
+   },
+   {
+    "chart": "Top Customers",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Sales Order Analysis",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Purchase Order Trends",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Full"
+   },
+   {
+    "chart": "Top Suppliers",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Purchase Order Analysis",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Work Order Analysis",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Pending Work Order",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Half"
+   },
+   {
+    "chart": "Produced Quantity",
+    "parent": "CEO Dashboard",
+    "parentfield": "charts",
+    "parenttype": "Dashboard",
+    "width": "Full"
+   }
+  ],
+  "dashboard_name": "CEO Dashboard",
+  "docstatus": 0,
+  "doctype": "Dashboard",
+  "is_default": 0,
+  "is_standard": 0,
+  "modified": "2026-08-11 09:53:23.356294",
+  "module": null,
+  "name": "CEO Dashboard"
+ }
+]

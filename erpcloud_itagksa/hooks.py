@@ -393,5 +393,9 @@ fixtures = [
 			]
 		],
 	},
+	{
+		"dt": "Dashboard",
+		"filters": [["name", "=", "CEO Dashboard"]],
+	},
 ]
 
