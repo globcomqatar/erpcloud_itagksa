@@ -24,10 +24,12 @@ def before_install():
 def after_install():
 	"""Run after this app's fixtures are synced during a fresh install."""
 	ensure_cash_supplier()
+	ensure_company_default_bank_account()
 
 
 def after_migrate():
 	ensure_inward_serial_field()
+	ensure_company_default_bank_account()
 
 
 def ensure_inward_serial_field():
@@ -72,6 +74,34 @@ def ensure_cash_supplier():
 	supplier.insert(ignore_permissions=True)
 	if supplier.name != CASH_SUPPLIER:
 		frappe.rename_doc("Supplier", supplier.name, CASH_SUPPLIER, force=True)
+	frappe.db.commit()
+
+
+def ensure_company_default_bank_account():
+	"""Fill Company.default_bank_account when it's blank and unambiguous.
+
+	The standard ERPNext "Bank Balance" dashboard chart (surfaced on our CEO
+	Dashboard fixture) resolves its account via
+	Company.default_bank_account -> if that's empty the chart throws
+	"Account is not set for the dashboard chart Bank Balance" and never
+	renders. Set-if-missing only, and only when there is exactly one enabled
+	Bank-type account for the company -- multiple candidates means picking
+	one would silently misrepresent the company's real default, so we skip.
+	"""
+	for company in frappe.get_all("Company", {"default_bank_account": ["in", ["", None]]}, pluck="name"):
+		bank_accounts = frappe.get_all(
+			"Account",
+			filters={
+				"company": company,
+				"account_type": "Bank",
+				"is_group": 0,
+				"disabled": 0,
+			},
+			pluck="name",
+		)
+		if len(bank_accounts) != 1:
+			continue
+		frappe.db.set_value("Company", company, "default_bank_account", bank_accounts[0])
 	frappe.db.commit()
 
 
