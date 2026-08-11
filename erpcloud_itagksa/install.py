@@ -25,11 +25,13 @@ def after_install():
 	"""Run after this app's fixtures are synced during a fresh install."""
 	ensure_cash_supplier()
 	ensure_company_default_bank_account()
+	ensure_profit_and_loss_chart_periodicity()
 
 
 def after_migrate():
 	ensure_inward_serial_field()
 	ensure_company_default_bank_account()
+	ensure_profit_and_loss_chart_periodicity()
 
 
 def ensure_inward_serial_field():
@@ -102,6 +104,33 @@ def ensure_company_default_bank_account():
 		if len(bank_accounts) != 1:
 			continue
 		frappe.db.set_value("Company", company, "default_bank_account", bank_accounts[0])
+	frappe.db.commit()
+
+
+def ensure_profit_and_loss_chart_periodicity():
+	"""Switch the standard "Profit and Loss" dashboard chart off "Yearly".
+
+	That chart's own dynamic_filters_json always sets from_fiscal_year ==
+	to_fiscal_year (both "current fiscal year"), and the Profit and Loss
+	Statement report returns an empty chart.data (labels=[], datasets=[])
+	whenever periodicity is "Yearly" with a single fiscal year selected --
+	the report_summary totals still compute fine, so the numbers show but
+	the bar never draws. "Quarterly" hits the report's normal multi-period
+	path and always renders. Unconditional: unlike the bank account default,
+	there's no ambiguous case here -- Yearly is broken 100% of the time
+	given this chart's fixed filters, so any site with it still set to
+	Yearly gets corrected once.
+	"""
+	filters_json = frappe.db.get_value("Dashboard Chart", "Profit and Loss", "filters_json")
+	if not filters_json:
+		return
+
+	filters = json.loads(filters_json)
+	if filters.get("periodicity") != "Yearly":
+		return
+
+	filters["periodicity"] = "Quarterly"
+	frappe.db.set_value("Dashboard Chart", "Profit and Loss", "filters_json", json.dumps(filters))
 	frappe.db.commit()
 
 
