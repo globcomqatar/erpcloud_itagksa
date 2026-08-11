@@ -4,6 +4,16 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.5 — 2026-08-11
+
+CEO Dashboard
+
+Ships a company-wide CEO Dashboard combining Sales, Buying, Manufacturing, and Accounts KPIs into one Desk dashboard.
+Cards: cash pulse (incoming/outgoing payments and bills), Sales, Buying, and Manufacturing headline numbers.
+Charts: Profit and Loss, Bank Balance, AR/AP ageing, Sales/Purchase Order trends and analysis, Top Customers/Suppliers, Work Order analysis, Produced Quantity.
+All cards/charts reference existing standard ERPNext fixtures by name — nothing new is created, just assembled into one view.
+Ships as a Dashboard fixture, so it's created automatically on bench install-app or bench migrate — no manual setup needed on any site.
+
 ### 15.13.4 — 2026-08-02
 
 Quality Inspection in Stock Entry Connections
