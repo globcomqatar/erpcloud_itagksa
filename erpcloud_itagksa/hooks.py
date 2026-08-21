@@ -257,6 +257,9 @@ after_migrate = "erpcloud_itagksa.install.after_migrate"
 # Migrated from globcom_manufacturing. Two modules: ITAG Manufacturing + ITAG Quality.
 
 doc_events = {
+	"Quotation": {
+		"validate": "erpcloud_itagksa.itag_ksa_selling.quotation.quotation.validate",
+	},
 	"Stock Entry": {
 		"before_validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.before_validate",
 		"validate": [
@@ -345,6 +348,7 @@ scheduler_events = {
 }
 
 doctype_js = {
+	"Quotation": "itag_ksa_selling/quotation/quotation.js",
 	"Sales Order": [
 		"itag_manufacturing/sales_order/sales_order.js",
 		"progress_billing/sales_order/sales_order.js",
@@ -372,11 +376,25 @@ override_doctype_dashboards = {
 fixtures = [
 	{
 		"dt": "Custom Field",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
+		"filters": [["module", "in", [
+				"ITAG Manufacturing",
+				"ITAG Quality",
+				"ITAG Stock",
+				"Itag Ksa Buying",
+				"Itag Ksa Selling",
+				"Progress Billing",
+			]]],
 	},
 	{
 		"dt": "Property Setter",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
+		"filters": [["module", "in", [
+				"ITAG Manufacturing",
+				"ITAG Quality",
+				"ITAG Stock",
+				"Itag Ksa Buying",
+				"Itag Ksa Selling",
+				"Progress Billing",
+			]]],
 	},
 	{
 		"dt": "Stock Entry Type",
