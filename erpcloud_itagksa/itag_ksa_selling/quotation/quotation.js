@@ -17,9 +17,14 @@ const DEPARTMENT_CONFIG = {
 	ceo: { role: 'CEO Review', signed_statuses: CEO_SIGNED_STATUSES }
 };
 
+// Inward subcontract work skips these reviews. The sections themselves hide through
+// depends_on on their Section Break; this list keeps the form from filling them in.
+const SUBCONTRACT_EXEMPT_DEPARTMENTS = ['design', 'quality', 'purchase', 'hse'];
+
 const DEPARTMENTS = Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => ({
 	role: config.role,
 	signed_statuses: config.signed_statuses,
+	exempt_when_subcontracted: SUBCONTRACT_EXEMPT_DEPARTMENTS.includes(key),
 	section: `custom_${key}_review_section`,
 	reviewer_field: `custom_reviewed_by_${key}`,
 	designation_field: `custom_designation_${key}`,
@@ -35,10 +40,6 @@ frappe.ui.form.on('Quotation', {
 
 	refresh: function (frm) {
 		setup_bid_approval(frm);
-	},
-
-	custom_recommended_selling_price: function (frm) {
-		calculate_cost_and_profitability(frm);
 	}
 });
 
@@ -81,10 +82,11 @@ function calculate_cost_and_profitability(frm) {
 		(total, row) => total + flt(row.amount),
 		0
 	);
-	let selling_price = flt(frm.doc.custom_recommended_selling_price);
+	let selling_price = flt(frm.doc.grand_total);
 	let expected_profit = selling_price - total_project_cost;
 
 	frm.set_value('custom_total_project_cost', total_project_cost);
+	frm.set_value('custom_recommended_selling_price', selling_price);
 	frm.set_value('custom_expected_profit', expected_profit);
 	frm.set_value('custom_profit_margin', selling_price ? (expected_profit / selling_price) * 100 : 0);
 }
@@ -178,6 +180,10 @@ function auto_fill_current_user_reviewers(frm) {
 	}
 
 	DEPARTMENTS.forEach((department) => {
+		if (department.exempt_when_subcontracted && frm.doc.custom_subcontracted_job) {
+			return;
+		}
+
 		if (frappe.user.has_role(department.role) && !frm.doc[department.reviewer_field]) {
 			frm.set_value(department.reviewer_field, frappe.session.user);
 		}
