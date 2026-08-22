@@ -80,7 +80,7 @@ function calculate_cost_and_profitability(frm) {
 		(total, row) => total + flt(row.amount),
 		0
 	);
-	let selling_price = flt(frm.doc.grand_total);
+	let selling_price = flt(frm.doc.rounded_total) || flt(frm.doc.grand_total);
 	let expected_profit = selling_price - total_project_cost;
 
 	frm.set_value('custom_total_project_cost', total_project_cost);

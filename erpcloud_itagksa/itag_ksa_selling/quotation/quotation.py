@@ -10,10 +10,17 @@ def validate(doc, method=None):
 
 def calculate_cost_and_profitability(doc):
 	doc.custom_total_project_cost = sum(flt(row.amount) for row in doc.custom_project_cost)
-	doc.custom_recommended_selling_price = flt(doc.grand_total)
+	doc.custom_recommended_selling_price = quoted_total(doc)
 
 	selling_price = flt(doc.custom_recommended_selling_price)
 	doc.custom_expected_profit = selling_price - flt(doc.custom_total_project_cost)
 	doc.custom_profit_margin = (
 		(flt(doc.custom_expected_profit) / selling_price * 100) if selling_price else 0
 	)
+
+
+def quoted_total(doc):
+	# What the customer is actually billed, the way erpnext reads it on the invoice
+	# (sales_invoice.py): rounded_total, which set_rounded_total zeroes when rounding
+	# is turned off on the quote or in Global Defaults.
+	return flt(doc.rounded_total) or flt(doc.grand_total)

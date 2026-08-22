@@ -6,8 +6,8 @@ from frappe.tests.utils import FrappeTestCase
 
 from erpcloud_itagksa.itag_ksa_selling.quotation.quotation import calculate_cost_and_profitability
 
-DEPARTMENT_KEYS = ("sales", "design", "operations", "quality", "purchase", "finance", "hse", "ceo")
-SUBCONTRACT_EXEMPT_KEYS = ("design", "quality", "purchase", "hse")
+DEPARTMENT_KEYS = ("design", "quality", "operations", "finance", "ceo")
+SUBCONTRACT_EXEMPT_KEYS = ("design", "quality")
 
 
 class TestQuotationBidApproval(FrappeTestCase):
@@ -42,20 +42,30 @@ class TestQuotationBidApproval(FrappeTestCase):
 
 			self.assertEqual(section.depends_on, expected, key)
 
-	def test_selling_price_follows_the_grand_total(self):
+	def test_selling_price_follows_the_rounded_total(self):
 		quotation = frappe.new_doc("Quotation")
-		quotation.grand_total = 1250
+		quotation.grand_total = 1249.60
+		quotation.rounded_total = 1250
 		quotation.custom_recommended_selling_price = 9999
 
 		calculate_cost_and_profitability(quotation)
 
 		self.assertEqual(quotation.custom_recommended_selling_price, 1250)
 
+	def test_selling_price_falls_back_to_the_grand_total_when_rounding_is_off(self):
+		quotation = frappe.new_doc("Quotation")
+		quotation.grand_total = 1249.60
+		quotation.rounded_total = 0
+
+		calculate_cost_and_profitability(quotation)
+
+		self.assertEqual(quotation.custom_recommended_selling_price, 1249.60)
+
 	def test_cost_and_profitability_totals_the_cost_lines(self):
 		quotation = frappe.new_doc("Quotation")
 		quotation.append("custom_project_cost", {"amount": 400})
 		quotation.append("custom_project_cost", {"amount": 600})
-		quotation.grand_total = 1250
+		quotation.rounded_total = 1250
 
 		calculate_cost_and_profitability(quotation)
 
@@ -63,7 +73,7 @@ class TestQuotationBidApproval(FrappeTestCase):
 		self.assertEqual(quotation.custom_expected_profit, 250)
 		self.assertEqual(quotation.custom_profit_margin, 20)
 
-	def test_profit_margin_is_zero_without_a_grand_total(self):
+	def test_profit_margin_is_zero_without_a_total(self):
 		quotation = frappe.new_doc("Quotation")
 		quotation.append("custom_project_cost", {"amount": 500})
 
