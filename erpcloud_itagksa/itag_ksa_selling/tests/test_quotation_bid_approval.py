@@ -6,7 +6,10 @@ from frappe.model.workflow import get_workflow_safe_globals
 from frappe.tests.utils import FrappeTestCase
 
 from erpcloud_itagksa.itag_ksa_selling.quotation.bid_approval import record_review
-from erpcloud_itagksa.itag_ksa_selling.quotation.quotation import calculate_cost_and_profitability
+from erpcloud_itagksa.itag_ksa_selling.quotation.quotation import (
+	calculate_cost_and_profitability,
+	copy_customer_name,
+)
 
 WORKFLOW_NAME = "Quotation Bid Approval"
 DEPARTMENT_REVIEW = "Pending Department Review"
@@ -207,6 +210,7 @@ class TestQuotationReviewRecord(FrappeTestCase):
 		# the tests run as Administrator, who holds every review role
 		self.assertEqual(quotation.custom_review_status_design, "Approved")
 		self.assertEqual(quotation.custom_reviewed_by_design, frappe.session.user)
+		self.assertEqual(quotation.custom_date_design, frappe.utils.today())
 
 	def test_a_reviewer_of_several_departments_signs_one_at_a_time(self):
 		quotation = frappe.new_doc("Quotation")
@@ -246,3 +250,21 @@ class TestQuotationReviewRecord(FrappeTestCase):
 		record_review(quotation)
 
 		self.assertEqual(quotation.custom_review_status_design, "Pending Review")
+		self.assertIsNone(quotation.custom_date_design)
+
+	def test_the_ceo_decision_is_dated_too(self):
+		quotation = frappe.new_doc("Quotation")
+
+		self.press(quotation, "Approve", state=CEO_APPROVAL)
+
+		self.assertEqual(quotation.custom_date_ceo, frappe.utils.today())
+
+
+class TestQuotationCustomerName(FrappeTestCase):
+	def test_the_bid_workup_carries_the_customer_name(self):
+		quotation = frappe.new_doc("Quotation")
+		quotation.customer_name = "Aramco"
+
+		copy_customer_name(quotation)
+
+		self.assertEqual(quotation.custom_customer_name2, "Aramco")

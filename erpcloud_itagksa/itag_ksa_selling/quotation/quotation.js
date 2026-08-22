@@ -27,6 +27,7 @@ const DEPARTMENTS = Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => ({
 	reviewer_field: `custom_reviewed_by_${key}`,
 	designation_field: `custom_designation_${key}`,
 	status_field: `custom_review_status_${key}`,
+	date_field: `custom_date_${key}`,
 	signature_attach_field: `custom_sign_${key}_attach`,
 	signature_html_field: `custom_sign_${key}`
 }));
@@ -59,8 +60,10 @@ DEPARTMENTS.forEach((department) => {
 
 		[department.status_field]: function (frm) {
 			if (department.signed_statuses.includes(frm.doc[department.status_field])) {
+				frm.set_value(department.date_field, frappe.datetime.get_today());
 				fetch_employee_signature(frm, department);
 			} else {
+				frm.set_value(department.date_field, '');
 				clear_signature(frm, department);
 			}
 		}

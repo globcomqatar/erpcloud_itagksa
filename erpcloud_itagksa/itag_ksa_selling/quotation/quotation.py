@@ -5,7 +5,14 @@ from frappe.utils import flt
 
 
 def validate(doc, method=None):
+	copy_customer_name(doc)
 	calculate_cost_and_profitability(doc)
+
+
+def copy_customer_name(doc):
+	# erpnext fills customer_name for a customer, a lead or a prospect, and hides it on
+	# the first tab. The bid workup shows its own copy on the Project Information section.
+	doc.custom_customer_name2 = doc.customer_name
 
 
 def calculate_cost_and_profitability(doc):

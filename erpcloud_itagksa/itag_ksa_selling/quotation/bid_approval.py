@@ -19,6 +19,7 @@ in Pending CEO Approval or Ready for Submit.
 
 import frappe
 from frappe.model.workflow import apply_workflow as apply_frappe_workflow
+from frappe.utils import today
 
 QUOTATION = "Quotation"
 ACTION_FLAG = "bid_review_action"
@@ -104,6 +105,7 @@ def reviewing_departments(doc):
 def sign_off(doc, department):
 	reviewer = doc.get(f"custom_reviewed_by_{department}") or frappe.session.user
 	doc.set(f"custom_reviewed_by_{department}", reviewer)
+	doc.set(f"custom_date_{department}", today())
 
 	employee = frappe.db.get_value(
 		"Employee", {"user_id": reviewer}, ["designation", "custom_attach_sign_image"], as_dict=True
