@@ -20,6 +20,9 @@ CEO Approval when nothing else is pending and the quote is over the CEO threshol
 Ready for Submit when it is under. Conditions read the stored quote, so "nothing else is
 pending" means every other required department has already approved.
 
+Reject carries the same gate as Approve: a department that has approved sees neither
+action again, and one that rejected still sees both when the quote comes back.
+
 Which departments are required comes from custom_subcontracted_job: a service work order
 needs Operations and Finance only, matching the sections the form hides.
 
@@ -98,7 +101,9 @@ def department_transitions():
 
 	for department, role, exempt in DEPARTMENTS:
 		reviews_this_quote = ["not doc.custom_subcontracted_job"] if exempt else []
-		can_still_approve = reviews_this_quote + [f'doc.custom_review_status_{department} != "Approved"']
+		awaiting_this_department = reviews_this_quote + [
+			f'doc.custom_review_status_{department} != "Approved"'
+		]
 		rest_approved = f"({other_departments_approved(department)})"
 
 		transitions += [
@@ -107,23 +112,23 @@ def department_transitions():
 				"Approve",
 				DEPARTMENT_REVIEW,
 				role,
-				every(can_still_approve + [f"not {rest_approved}"]),
+				every(awaiting_this_department + [f"not {rest_approved}"]),
 			),
 			(
 				DEPARTMENT_REVIEW,
 				"Approve",
 				CEO_APPROVAL,
 				role,
-				every(can_still_approve + [rest_approved, f"{QUOTE_TOTAL} > {CEO_APPROVAL_THRESHOLD}"]),
+				every(awaiting_this_department + [rest_approved, f"{QUOTE_TOTAL} > {CEO_APPROVAL_THRESHOLD}"]),
 			),
 			(
 				DEPARTMENT_REVIEW,
 				"Approve",
 				READY_FOR_SUBMIT,
 				role,
-				every(can_still_approve + [rest_approved, f"{QUOTE_TOTAL} <= {CEO_APPROVAL_THRESHOLD}"]),
+				every(awaiting_this_department + [rest_approved, f"{QUOTE_TOTAL} <= {CEO_APPROVAL_THRESHOLD}"]),
 			),
-			(DEPARTMENT_REVIEW, "Reject", DRAFT, role, every(reviews_this_quote) or None),
+			(DEPARTMENT_REVIEW, "Reject", DRAFT, role, every(awaiting_this_department)),
 		]
 
 	return transitions
