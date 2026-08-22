@@ -7,19 +7,17 @@ const CEO_SIGNED_STATUSES = ['Approved', 'Approved with Conditions', 'Revise & R
 // Single source of truth for the bid approval sections. Every field name is derived
 // from the key, so a new department needs one entry here plus its custom fields.
 const DEPARTMENT_CONFIG = {
-	sales: { role: 'Sales Review', signed_statuses: REVIEW_SIGNED_STATUSES },
 	design: { role: 'Manufacturing Review', signed_statuses: REVIEW_SIGNED_STATUSES },
-	operations: { role: 'Operation Review', signed_statuses: REVIEW_SIGNED_STATUSES },
 	quality: { role: 'Quality Review', signed_statuses: REVIEW_SIGNED_STATUSES },
-	purchase: { role: 'Purchase Review', signed_statuses: REVIEW_SIGNED_STATUSES },
+	operations: { role: 'Operation Review', signed_statuses: REVIEW_SIGNED_STATUSES },
 	finance: { role: 'Finance Review', signed_statuses: REVIEW_SIGNED_STATUSES },
-	hse: { role: 'HSE Review', signed_statuses: REVIEW_SIGNED_STATUSES },
-	ceo: { role: 'CEO Review', signed_statuses: CEO_SIGNED_STATUSES }
+	ceo: { role: 'CEO Approval', signed_statuses: CEO_SIGNED_STATUSES }
 };
 
-// Inward subcontract work skips these reviews. The sections themselves hide through
-// depends_on on their Section Break; this list keeps the form from filling them in.
-const SUBCONTRACT_EXEMPT_DEPARTMENTS = ['design', 'quality', 'purchase', 'hse'];
+// Inward subcontract work skips these reviews, leaving Operations, Finance and the CEO
+// decision. The sections themselves hide through depends_on on their Section Break; this
+// list keeps the form from filling them in.
+const SUBCONTRACT_EXEMPT_DEPARTMENTS = ['design', 'quality'];
 
 const DEPARTMENTS = Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => ({
 	role: config.role,
