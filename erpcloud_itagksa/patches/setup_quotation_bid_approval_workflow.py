@@ -20,8 +20,9 @@ CEO Approval when nothing else is pending and the quote is over the CEO threshol
 Ready for Submit when it is under. Conditions read the stored quote, so "nothing else is
 pending" means every other required department has already approved.
 
-Reject carries the same gate as Approve: a department that has approved sees neither
-action again, and one that rejected still sees both when the quote comes back.
+A department sees Approve and Reject for as long as the quote sits in review: holding the
+review role is the only gate. A department that approved can still reject, and one that
+rejected can approve when the quote comes back.
 
 Which departments are required comes from custom_subcontracted_job: a service work order
 needs Operations and Finance only, matching the sections the form hides.
@@ -101,9 +102,6 @@ def department_transitions():
 
 	for department, role, exempt in DEPARTMENTS:
 		reviews_this_quote = ["not doc.custom_subcontracted_job"] if exempt else []
-		awaiting_this_department = reviews_this_quote + [
-			f'doc.custom_review_status_{department} != "Approved"'
-		]
 		rest_approved = f"({other_departments_approved(department)})"
 
 		transitions += [
@@ -112,23 +110,23 @@ def department_transitions():
 				"Approve",
 				DEPARTMENT_REVIEW,
 				role,
-				every(awaiting_this_department + [f"not {rest_approved}"]),
+				every(reviews_this_quote + [f"not {rest_approved}"]),
 			),
 			(
 				DEPARTMENT_REVIEW,
 				"Approve",
 				CEO_APPROVAL,
 				role,
-				every(awaiting_this_department + [rest_approved, f"{QUOTE_TOTAL} > {CEO_APPROVAL_THRESHOLD}"]),
+				every(reviews_this_quote + [rest_approved, f"{QUOTE_TOTAL} > {CEO_APPROVAL_THRESHOLD}"]),
 			),
 			(
 				DEPARTMENT_REVIEW,
 				"Approve",
 				READY_FOR_SUBMIT,
 				role,
-				every(awaiting_this_department + [rest_approved, f"{QUOTE_TOTAL} <= {CEO_APPROVAL_THRESHOLD}"]),
+				every(reviews_this_quote + [rest_approved, f"{QUOTE_TOTAL} <= {CEO_APPROVAL_THRESHOLD}"]),
 			),
-			(DEPARTMENT_REVIEW, "Reject", DRAFT, role, every(awaiting_this_department)),
+			(DEPARTMENT_REVIEW, "Reject", DRAFT, role, every(reviews_this_quote) or None),
 		]
 
 	return transitions
