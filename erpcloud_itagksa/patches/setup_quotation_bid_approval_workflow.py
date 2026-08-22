@@ -9,7 +9,7 @@ state and the conditions that decide where every action lands all live on the Wo
 record.
 
 Department review is parallel. All four departments work inside Pending Department
-Review with the same two actions, Approve and Reject. Which department a press belongs
+Review with the same two actions, Approve and Revise. Which department a press belongs
 to comes from the role of the user who pressed it - see
 itag_ksa_selling/quotation/bid_approval.py - because a transition writes only one field
 and every department shares the state.
@@ -20,15 +20,19 @@ CEO Approval when nothing else is pending and the quote is over the CEO threshol
 Ready for Submit when it is under. Conditions read the stored quote, so "nothing else is
 pending" means every other required department has already approved.
 
-A department sees Approve and Reject for as long as the quote sits in review: holding the
-review role is the only gate. A department that approved can still reject, and one that
-rejected can approve when the quote comes back.
+A department sees Approve and Revise for as long as the quote sits in review: holding the
+review role is the only gate. A department that approved can still send the quote back, and
+one that sent it back can approve when it comes round again.
+
+Revise returns the quote to Draft and drops every other department's sign-off - see
+itag_ksa_selling/quotation/bid_approval.py - so the round starts over. The CEO's Revise &
+Resubmit does the same.
 
 Which departments are required comes from custom_subcontracted_job: a service work order
 needs Operations and Finance only, matching the sections the form hides.
 
-A CEO decision is not a submission. It lands in Ready for Submit and the Sales User
-submits from there.
+A CEO decision is not a submission. It lands in Ready for Submit, where Submit is the
+action that submits the quote, for the same sales roles that own the Draft.
 
 The workflow is written in full every time this patch runs, so a site carrying the first
 version - one action per department and a manual Send to CEO - ends up with the same
@@ -73,9 +77,8 @@ STATES = [
 ]
 
 # (state, action, next_state, role, condition)
-SALES_TRANSITIONS = [
-	(DRAFT, "Send for Review", DEPARTMENT_REVIEW, "Sales User", None),
-	(READY_FOR_SUBMIT, "Submit", APPROVED, "Sales User", None),
+SALES_TRANSITIONS = [(DRAFT, "Send for Review", DEPARTMENT_REVIEW, "Sales User", None)] + [
+	(READY_FOR_SUBMIT, "Submit", APPROVED, role, None) for role in SALES_ROLES
 ]
 
 CEO_TRANSITIONS = [
@@ -126,7 +129,7 @@ def department_transitions():
 				role,
 				every(reviews_this_quote + [rest_approved, f"{QUOTE_TOTAL} <= {CEO_APPROVAL_THRESHOLD}"]),
 			),
-			(DEPARTMENT_REVIEW, "Reject", DRAFT, role, every(reviews_this_quote) or None),
+			(DEPARTMENT_REVIEW, "Revise", DRAFT, role, every(reviews_this_quote) or None),
 		]
 
 	return transitions

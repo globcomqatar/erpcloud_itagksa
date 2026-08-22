@@ -141,9 +141,10 @@ class TestQuotationBidApprovalWorkflow(FrappeTestCase):
 			self.landing_states("Manufacturing Review", base_rounded_total=25000), [DEPARTMENT_REVIEW]
 		)
 
-	def test_a_department_that_approved_has_nothing_left_to_press(self):
+	def test_a_department_that_approved_can_still_press(self):
 		self.assertEqual(
-			self.landing_states("Manufacturing Review", custom_review_status_design="Approved"), []
+			self.landing_states("Manufacturing Review", custom_review_status_design="Approved"),
+			[DEPARTMENT_REVIEW],
 		)
 
 	def test_the_last_approval_reaches_the_ceo_above_the_threshold(self):
@@ -179,20 +180,19 @@ class TestQuotationBidApprovalWorkflow(FrappeTestCase):
 			[CEO_APPROVAL],
 		)
 
-	def test_every_department_rejects_back_to_draft(self):
+	def test_every_department_revises_back_to_draft(self):
 		for role in ("Manufacturing Review", "Quality Review", "Operation Review", "Finance Review"):
-			self.assertEqual(self.landing_states(role, action="Reject"), ["Draft"], role)
+			self.assertEqual(self.landing_states(role, action="Revise"), ["Draft"], role)
 
 	def test_the_ceo_decision_does_not_submit(self):
 		self.assertEqual(self.landing_states("CEO Approval", state=CEO_APPROVAL), [READY_FOR_SUBMIT])
 
-	def test_the_sales_user_submits_from_ready_for_submit(self):
+	def test_sales_submits_from_ready_for_submit(self):
 		workflow = frappe.get_doc("Workflow", WORKFLOW_NAME)
 		submit = [t for t in workflow.transitions if t.action == "Submit"]
 
-		self.assertEqual(len(submit), 1)
-		self.assertEqual(submit[0].state, READY_FOR_SUBMIT)
-		self.assertEqual(submit[0].allowed, "Sales User")
+		self.assertEqual({t.state for t in submit}, {READY_FOR_SUBMIT})
+		self.assertEqual({t.allowed for t in submit}, {"Sales User", "Sales Manager"})
 		self.assertEqual({s.doc_status for s in workflow.states if s.state == submit[0].next_state}, {"1"})
 
 
@@ -220,12 +220,40 @@ class TestQuotationReviewRecord(FrappeTestCase):
 
 		self.assertEqual(quotation.custom_review_status_quality, "Approved")
 
-	def test_a_rejection_is_recorded_as_rejected(self):
+	def test_a_send_back_is_recorded_as_revise(self):
 		quotation = frappe.new_doc("Quotation")
 
-		self.press(quotation, "Reject")
+		self.press(quotation, "Revise")
 
-		self.assertEqual(quotation.custom_review_status_design, "Rejected")
+		self.assertEqual(quotation.custom_review_status_design, "Revise")
+
+	def test_a_department_send_back_clears_the_other_departments(self):
+		quotation = frappe.new_doc("Quotation")
+		quotation.custom_review_status_operations = "Approved"
+		quotation.custom_reviewed_by_operations = frappe.session.user
+		quotation.custom_date_operations = frappe.utils.today()
+
+		self.press(quotation, "Revise")
+
+		self.assertEqual(quotation.custom_review_status_design, "Revise")
+		self.assertEqual(quotation.custom_review_status_operations, "Pending Review")
+		self.assertIsNone(quotation.custom_reviewed_by_operations)
+		self.assertIsNone(quotation.custom_date_operations)
+
+	def test_the_ceo_send_back_clears_every_department(self):
+		quotation = frappe.new_doc("Quotation")
+		for department in ("design", "quality", "operations", "finance"):
+			quotation.set(f"custom_review_status_{department}", "Approved")
+			quotation.set(f"custom_reviewed_by_{department}", frappe.session.user)
+
+		self.press(quotation, "Revise & Resubmit", state=CEO_APPROVAL)
+
+		self.assertEqual(quotation.custom_review_status_ceo, "Revise & Resubmit")
+		for department in ("design", "quality", "operations", "finance"):
+			self.assertEqual(
+				quotation.get(f"custom_review_status_{department}"), "Pending Review", department
+			)
+			self.assertIsNone(quotation.get(f"custom_reviewed_by_{department}"), department)
 
 	def test_the_ceo_decision_only_touches_the_ceo_status(self):
 		quotation = frappe.new_doc("Quotation")

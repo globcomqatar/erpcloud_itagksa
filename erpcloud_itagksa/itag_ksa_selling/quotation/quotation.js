@@ -1,7 +1,7 @@
 // Copyright (c) 2026, ITAG KSA and contributors
 // For license information, please see license.txt
 
-const REVIEW_SIGNED_STATUSES = ['Approved', 'Rejected'];
+const REVIEW_SIGNED_STATUSES = ['Approved', 'Revise'];
 const CEO_SIGNED_STATUSES = ['Approved', 'Approved with Conditions', 'Revise & Resubmit', 'No Bid'];
 
 // Single source of truth for the bid approval sections. Every field name is derived
