@@ -60,10 +60,7 @@ class TestBidApproval(FrappeTestCase):
 		self.assertEqual(bid_approval.quotation, quotation.name)
 		self.assertEqual(bid_approval.customer, quotation.customer_name)
 		self.assertEqual(bid_approval.subcontracted_job, 1)
-		self.assertEqual(
-			bid_approval.recommended_selling_price,
-			quotation.rounded_total or quotation.grand_total,
-		)
+		self.assertEqual(bid_approval.recommended_selling_price, quotation.net_total)
 
 	def test_create_bid_approval_blocks_non_draft_quotation(self):
 		quotation = self.make_test_quotation()

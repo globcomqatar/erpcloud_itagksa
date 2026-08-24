@@ -4,7 +4,6 @@
  "creation": "2026-08-24 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
- "is_submittable": 1,
  "field_order": [
   "project_information_section",
   "quotation",
@@ -92,7 +91,8 @@
   "review_status_ceo",
   "sign_ceo_attach",
   "sign_ceo",
-  "manual_sign_ceo"
+  "manual_sign_ceo",
+  "amended_from"
  ],
  "fields": [
   {
@@ -271,6 +271,8 @@
    "label": "Key Conditions / Risks"
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Manufacturing Review') || doc.reviewed_by_design",
    "depends_on": "eval:!doc.subcontracted_job",
    "fieldname": "design_review_section",
    "fieldtype": "Section Break",
@@ -333,6 +335,8 @@
    "label": "Manual Signature"
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Quality Review') || doc.reviewed_by_quality",
    "depends_on": "eval:!doc.subcontracted_job",
    "fieldname": "quality_review_section",
    "fieldtype": "Section Break",
@@ -395,6 +399,8 @@
    "label": "Manual Signature"
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Operation Review') || doc.reviewed_by_operations",
    "fieldname": "operations_review_section",
    "fieldtype": "Section Break",
    "label": "Operations Department"
@@ -456,6 +462,8 @@
    "label": "Manual Signature"
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Finance Review') || doc.reviewed_by_finance",
    "fieldname": "finance_review_section",
    "fieldtype": "Section Break",
    "label": "Finance Department"
@@ -517,6 +525,8 @@
    "label": "Manual Signature"
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('CEO Approval') || doc.reviewed_by_ceo",
    "fieldname": "ceo_review_section",
    "fieldtype": "Section Break",
    "label": "CEO Decision"
@@ -582,11 +592,22 @@
    "fieldtype": "Select",
    "label": "Naming Series",
    "options": "BA-.YY.-.####."
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Bid Approval",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2026-08-24 10:43:25.459116",
+ "modified": "2026-08-24 14:31:10.724840",
  "modified_by": "Administrator",
  "module": "Itag Ksa Selling",
  "name": "Bid Approval",

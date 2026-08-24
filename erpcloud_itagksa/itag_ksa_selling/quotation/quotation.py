@@ -21,9 +21,7 @@ def create_bid_approval(quotation):
 	bid_approval.quotation = quotation_doc.name
 	bid_approval.customer = quotation_doc.customer_name
 	bid_approval.subcontracted_job = quotation_doc.custom_subcontracted_job
-	bid_approval.recommended_selling_price = flt(quotation_doc.rounded_total) or flt(
-		quotation_doc.grand_total
-	)
+	bid_approval.recommended_selling_price = flt(quotation_doc.net_total)
 	bid_approval.insert()
 
 	return bid_approval.name

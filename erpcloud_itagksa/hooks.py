@@ -368,6 +368,7 @@ override_doctype_dashboards = {
 	"Sales Order": "erpcloud_itagksa.itag_manufacturing.sales_order.sales_order_dashboard.get_dashboard_data",
 	"Stock Entry": "erpcloud_itagksa.itag_quality.calibration_dashboard.stock_entry",
 	"Purchase Receipt": "erpcloud_itagksa.itag_quality.calibration_dashboard.purchase_receipt",
+	"Quotation": "erpcloud_itagksa.itag_ksa_selling.quotation.quotation_dashboard.get_dashboard_data",
 }
 
 fixtures = [
