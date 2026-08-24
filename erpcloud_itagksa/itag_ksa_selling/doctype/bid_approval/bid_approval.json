@@ -287,13 +287,15 @@
   {
    "fieldname": "name_design",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "read_only": 1
   },
   {
    "fieldname": "designation_design",
    "fieldtype": "Link",
    "label": "Designation",
-   "options": "Designation"
+   "options": "Designation",
+   "read_only": 1
   },
   {
    "fieldname": "remarks_design",
@@ -351,13 +353,15 @@
   {
    "fieldname": "name_quality",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "read_only": 1
   },
   {
    "fieldname": "designation_quality",
    "fieldtype": "Link",
    "label": "Designation",
-   "options": "Designation"
+   "options": "Designation",
+   "read_only": 1
   },
   {
    "fieldname": "remarks_quality",
@@ -414,13 +418,15 @@
   {
    "fieldname": "name_operations",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "read_only": 1
   },
   {
    "fieldname": "designation_operations",
    "fieldtype": "Link",
    "label": "Designation",
-   "options": "Designation"
+   "options": "Designation",
+   "read_only": 1
   },
   {
    "fieldname": "remarks_operations",
@@ -477,13 +483,15 @@
   {
    "fieldname": "name_finance",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "read_only": 1
   },
   {
    "fieldname": "designation_finance",
    "fieldtype": "Link",
    "label": "Designation",
-   "options": "Designation"
+   "options": "Designation",
+   "read_only": 1
   },
   {
    "fieldname": "remarks_finance",
@@ -540,13 +548,15 @@
   {
    "fieldname": "name_ceo",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "read_only": 1
   },
   {
    "fieldname": "designation_ceo",
    "fieldtype": "Link",
    "label": "Designation",
-   "options": "Designation"
+   "options": "Designation",
+   "read_only": 1
   },
   {
    "fieldname": "remarks_ceo",
@@ -607,7 +617,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-24 14:31:10.724840",
+ "modified": "2026-08-24 14:51:39.976608",
  "modified_by": "Administrator",
  "module": "Itag Ksa Selling",
  "name": "Bid Approval",
