@@ -14,6 +14,9 @@ def create_bid_approval(quotation):
 	if quotation_doc.docstatus != 0:
 		frappe.throw(_("Bid Approval can only be created from a draft Quotation."))
 
+	if frappe.db.exists("Bid Approval", {"quotation": quotation_doc.name}):
+		frappe.throw(_("A Bid Approval already exists for this Quotation."))
+
 	bid_approval = frappe.new_doc("Bid Approval")
 	bid_approval.quotation = quotation_doc.name
 	bid_approval.customer = quotation_doc.customer_name
