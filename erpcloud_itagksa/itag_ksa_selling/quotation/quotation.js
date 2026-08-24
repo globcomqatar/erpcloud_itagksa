@@ -17,8 +17,7 @@ frappe.ui.form.on('Quotation', {
 							}
 						}
 					});
-				},
-				__('Create')
+				}
 			);
 		}
 	}
