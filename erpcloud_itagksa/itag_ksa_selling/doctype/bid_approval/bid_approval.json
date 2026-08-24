@@ -304,7 +304,8 @@
   {
    "fieldname": "date_design",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "read_only": 1
   },
   {
    "default": "Pending Review",
@@ -365,7 +366,8 @@
   {
    "fieldname": "date_quality",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "read_only": 1
   },
   {
    "default": "Pending Review",
@@ -425,7 +427,8 @@
   {
    "fieldname": "date_operations",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "read_only": 1
   },
   {
    "default": "Pending Review",
@@ -485,7 +488,8 @@
   {
    "fieldname": "date_finance",
    "fieldtype": "Date",
-   "label": "Date"
+   "label": "Date",
+   "read_only": 1
   },
   {
    "default": "Pending Review",
@@ -545,7 +549,8 @@
   {
    "fieldname": "date_ceo",
    "fieldtype": "Date",
-   "label": "Approval Date"
+   "label": "Approval Date",
+   "read_only": 1
   },
   {
    "fieldname": "review_status_ceo",

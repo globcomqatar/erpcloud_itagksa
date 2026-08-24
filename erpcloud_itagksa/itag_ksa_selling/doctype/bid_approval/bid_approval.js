@@ -18,6 +18,7 @@ const DEPARTMENTS = Object.entries(DEPARTMENT_CONFIG).map(([key, config]) => ({
 	signed_statuses: config.signed_statuses,
 	section: `${key}_review_section`,
 	reviewer_field: `reviewed_by_${key}`,
+	name_field: `name_${key}`,
 	designation_field: `designation_${key}`,
 	status_field: `review_status_${key}`,
 	date_field: `date_${key}`,
@@ -48,7 +49,7 @@ frappe.ui.form.on('Bid Cost Line', {
 DEPARTMENTS.forEach((department) => {
 	frappe.ui.form.on('Bid Approval', {
 		[department.reviewer_field]: function (frm) {
-			fetch_employee_designation(frm, department);
+			fetch_employee_details(frm, department);
 		},
 
 		[department.status_field]: function (frm) {
@@ -122,15 +123,17 @@ function set_department_permissions(frm) {
 	}
 }
 
-function fetch_employee_designation(frm, department) {
+function fetch_employee_details(frm, department) {
 	let user_id = frm.doc[department.reviewer_field];
 
 	if (!user_id) {
+		frm.set_value(department.name_field, '');
 		frm.set_value(department.designation_field, '');
 		return;
 	}
 
-	frappe.db.get_value('Employee', { user_id: user_id }, 'designation').then((r) => {
+	frappe.db.get_value('Employee', { user_id: user_id }, ['employee_name', 'designation']).then((r) => {
+		frm.set_value(department.name_field, (r.message && r.message.employee_name) || '');
 		frm.set_value(department.designation_field, (r.message && r.message.designation) || '');
 	});
 }
