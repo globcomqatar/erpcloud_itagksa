@@ -5,5 +5,6 @@ from frappe import _
 
 
 def get_dashboard_data(data):
+	data["non_standard_fieldnames"]["Bid Approval"] = "quotation"
 	data["transactions"].append({"label": _("Bid Approval"), "items": ["Bid Approval"]})
 	return data
