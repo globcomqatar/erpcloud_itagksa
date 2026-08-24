@@ -256,19 +256,7 @@ after_migrate = "erpcloud_itagksa.install.after_migrate"
 # ==================
 # Migrated from globcom_manufacturing. Two modules: ITAG Manufacturing + ITAG Quality.
 
-# Carries the pressed workflow action onto the Quotation so the bid approval handler
-# can tell which department signed. Every other doctype goes straight to frappe.
-override_whitelisted_methods = {
-	"frappe.model.workflow.apply_workflow": "erpcloud_itagksa.itag_ksa_selling.quotation.bid_approval.apply_workflow",
-}
-
 doc_events = {
-	"Quotation": {
-		"validate": [
-			"erpcloud_itagksa.itag_ksa_selling.quotation.quotation.validate",
-			"erpcloud_itagksa.itag_ksa_selling.quotation.bid_approval.record_review",
-		],
-	},
 	"Stock Entry": {
 		"before_validate": "erpcloud_itagksa.itag_manufacturing.stock_entry.stock_entry.before_validate",
 		"validate": [

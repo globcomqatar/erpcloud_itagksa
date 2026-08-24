@@ -1,33 +1,26 @@
 # Copyright (c) 2026, ITAG KSA and contributors
 # For license information, please see license.txt
 
+import frappe
+from frappe import _
 from frappe.utils import flt
 
 
-def validate(doc, method=None):
-	copy_customer_name(doc)
-	calculate_cost_and_profitability(doc)
+@frappe.whitelist()
+def create_bid_approval(quotation):
+	quotation_doc = frappe.get_doc("Quotation", quotation)
+	quotation_doc.check_permission("read")
 
+	if quotation_doc.docstatus != 0:
+		frappe.throw(_("Bid Approval can only be created from a draft Quotation."))
 
-def copy_customer_name(doc):
-	# erpnext fills customer_name for a customer, a lead or a prospect, and hides it on
-	# the first tab. The bid workup shows its own copy on the Project Information section.
-	doc.custom_customer_name2 = doc.customer_name
-
-
-def calculate_cost_and_profitability(doc):
-	doc.custom_total_project_cost = sum(flt(row.amount) for row in doc.custom_project_cost)
-	doc.custom_recommended_selling_price = quoted_total(doc)
-
-	selling_price = flt(doc.custom_recommended_selling_price)
-	doc.custom_expected_profit = selling_price - flt(doc.custom_total_project_cost)
-	doc.custom_profit_margin = (
-		(flt(doc.custom_expected_profit) / selling_price * 100) if selling_price else 0
+	bid_approval = frappe.new_doc("Bid Approval")
+	bid_approval.quotation = quotation_doc.name
+	bid_approval.customer = quotation_doc.customer_name
+	bid_approval.subcontracted_job = quotation_doc.custom_subcontracted_job
+	bid_approval.recommended_selling_price = flt(quotation_doc.rounded_total) or flt(
+		quotation_doc.grand_total
 	)
+	bid_approval.insert()
 
-
-def quoted_total(doc):
-	# What the customer is actually billed, the way erpnext reads it on the invoice
-	# (sales_invoice.py): rounded_total, which set_rounded_total zeroes when rounding
-	# is turned off on the quote or in Global Defaults.
-	return flt(doc.rounded_total) or flt(doc.grand_total)
+	return bid_approval.name
