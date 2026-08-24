@@ -8,23 +8,21 @@ frappe.ui.form.on('Quotation', {
 				let existing = r.message && r.message.name;
 
 				if (existing) {
-					frm.add_custom_button(__('Bid Approval'), function () {
-						frappe.set_route('Form', 'Bid Approval', existing);
-					});
-				} else {
-					frm.add_custom_button(__('Bid Approval'), function () {
-						frappe.call({
-							method: 'erpcloud_itagksa.itag_ksa_selling.quotation.quotation.create_bid_approval',
-							args: { quotation: frm.doc.name },
-							freeze: true,
-							callback: function (r) {
-								if (r.message) {
-									frappe.set_route('Form', 'Bid Approval', r.message);
-								}
-							}
-						});
-					});
+					return;
 				}
+
+				frm.add_custom_button(__('Bid Approval'), function () {
+					frappe.call({
+						method: 'erpcloud_itagksa.itag_ksa_selling.quotation.quotation.create_bid_approval',
+						args: { quotation: frm.doc.name },
+						freeze: true,
+						callback: function (r) {
+							if (r.message) {
+								frappe.set_route('Form', 'Bid Approval', r.message);
+							}
+						}
+					});
+				});
 			});
 		}
 	}
