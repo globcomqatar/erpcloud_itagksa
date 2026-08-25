@@ -4,6 +4,23 @@ ERPCloud Custom Development for ITAG KSA
 
 ### Changelog
 
+### 15.13.6 — 2026-08-25
+
+Bid Approval doctype
+
+Bid Approval is now its own doctype, not a tab on Quotation. A draft Quotation gets a "Bid Approval" button that creates one, carrying the customer name and the "Inward Subcontract" checkbox forward.
+Everything else — cost build-up, project info, readiness/risk, the five department reviews, the CEO decision — is filled on the new document directly.
+Bid Cost Component / Bid Cost Line are unchanged, just now attached to Bid Approval instead of Quotation.
+Two new fields: Document Date (defaults to today, next to the other project-info fields) and a Scope of Work section with a rich-text field.
+
+Manual review, gated by department role
+
+The workflow (Draft → Department Review → CEO Approval → Ready for Submit) is gone. Bid Approval is a plain document — no submit, no states.
+Each reviewer opens their department's section, picks themself in Reviewed By, and sets their own Review/Approval Status by hand. Nothing is auto-filled.
+A section stays gated the same way it always was: only someone holding that department's role (or System Manager) can edit it, and the Reviewed By dropdown only offers users who hold that role.
+Approving/rejecting still dates itself and pulls the reviewer's Employee signature image in, falling back to a manual signature pad.
+Design and Quality stay hidden on an inward subcontract job; Operations, Finance and the CEO decision are unaffected.
+
 ### 15.13.5 — 2026-08-11
 
 CEO Dashboard
