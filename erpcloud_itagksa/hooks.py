@@ -345,6 +345,7 @@ scheduler_events = {
 }
 
 doctype_js = {
+	"Quotation": "itag_ksa_selling/quotation/quotation.js",
 	"Sales Order": [
 		"itag_manufacturing/sales_order/sales_order.js",
 		"progress_billing/sales_order/sales_order.js",
@@ -367,16 +368,31 @@ override_doctype_dashboards = {
 	"Sales Order": "erpcloud_itagksa.itag_manufacturing.sales_order.sales_order_dashboard.get_dashboard_data",
 	"Stock Entry": "erpcloud_itagksa.itag_quality.calibration_dashboard.stock_entry",
 	"Purchase Receipt": "erpcloud_itagksa.itag_quality.calibration_dashboard.purchase_receipt",
+	"Quotation": "erpcloud_itagksa.itag_ksa_selling.quotation.quotation_dashboard.get_dashboard_data",
 }
 
 fixtures = [
 	{
 		"dt": "Custom Field",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
+		"filters": [["module", "in", [
+				"ITAG Manufacturing",
+				"ITAG Quality",
+				"ITAG Stock",
+				"Itag Ksa Buying",
+				"Itag Ksa Selling",
+				"Progress Billing",
+			]]],
 	},
 	{
 		"dt": "Property Setter",
-		"filters": [["module", "in", ["ITAG Manufacturing", "ITAG Quality", "ITAG Stock", "Itag Ksa Buying", "Progress Billing"]]],
+		"filters": [["module", "in", [
+				"ITAG Manufacturing",
+				"ITAG Quality",
+				"ITAG Stock",
+				"Itag Ksa Buying",
+				"Itag Ksa Selling",
+				"Progress Billing",
+			]]],
 	},
 	{
 		"dt": "Stock Entry Type",

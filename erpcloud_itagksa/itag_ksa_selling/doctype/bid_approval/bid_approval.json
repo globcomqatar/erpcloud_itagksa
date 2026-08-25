@@ -1,0 +1,703 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-08-24 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "project_information_section",
+  "quotation",
+  "customer",
+  "subcontracted_job",
+  "aramco_9com_code",
+  "qualification_status_9com",
+  "quality_inspection_level",
+  "project_info_column",
+  "document_date",
+  "bid_closing_date",
+  "committed_delivery",
+  "payment_terms",
+  "naming_series",
+  "scope_of_work_section",
+  "scope_of_work",
+  "cost_and_profitability_section",
+  "project_cost",
+  "total_project_cost",
+  "bid_price_section",
+  "recommended_selling_price",
+  "minimum_negotiation_price",
+  "bid_price_column",
+  "expected_profit",
+  "profit_margin",
+  "project_readiness_and_risk_section",
+  "engineering_technical",
+  "qaqc_itp_inspection",
+  "operations_capacity_delivery",
+  "finance_cost_cash_flow",
+  "risk_column_break",
+  "overall_risk",
+  "key_conditions_risks",
+  "design_review_section",
+  "reviewed_by_design",
+  "name_design",
+  "designation_design",
+  "remarks_design",
+  "design_review_column",
+  "date_design",
+  "review_status_design",
+  "sign_design_attach",
+  "sign_design",
+  "manual_sign_design",
+  "quality_review_section",
+  "reviewed_by_quality",
+  "name_quality",
+  "designation_quality",
+  "remarks_quality",
+  "quality_review_column",
+  "date_quality",
+  "review_status_quality",
+  "sign_quality_attach",
+  "sign_quality",
+  "manual_sign_quality",
+  "operations_review_section",
+  "reviewed_by_operations",
+  "name_operations",
+  "designation_operations",
+  "remarks_operations",
+  "operations_review_column",
+  "date_operations",
+  "review_status_operations",
+  "sign_operations_attach",
+  "sign_operations",
+  "manual_sign_operations",
+  "finance_review_section",
+  "reviewed_by_finance",
+  "name_finance",
+  "designation_finance",
+  "remarks_finance",
+  "finance_review_column",
+  "date_finance",
+  "review_status_finance",
+  "sign_finance_attach",
+  "sign_finance",
+  "manual_sign_finance",
+  "ceo_review_section",
+  "reviewed_by_ceo",
+  "name_ceo",
+  "designation_ceo",
+  "remarks_ceo",
+  "ceo_review_column",
+  "date_ceo",
+  "review_status_ceo",
+  "sign_ceo_attach",
+  "sign_ceo",
+  "manual_sign_ceo",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_information_section",
+   "fieldtype": "Section Break",
+   "label": "Project Information"
+  },
+  {
+   "fieldname": "quotation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Quotation",
+   "options": "Quotation",
+   "read_only_depends_on": "eval:!doc.__islocal",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Data",
+   "label": "Customer",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "subcontracted_job",
+   "fieldtype": "Check",
+   "label": "Inward Subcontract (Service Work Order)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "aramco_9com_code",
+   "fieldtype": "Link",
+   "label": "Aramco 9COM / Material Commodity Code",
+   "options": "Aramco 9COM"
+  },
+  {
+   "fieldname": "qualification_status_9com",
+   "fieldtype": "Select",
+   "label": "9COM Qualification Status",
+   "options": "\nApproved\nUnder Qualification\nNot Approved\nN/A"
+  },
+  {
+   "fieldname": "quality_inspection_level",
+   "fieldtype": "Link",
+   "label": "Quality Inspection Level",
+   "options": "Quality Inspection Level"
+  },
+  {
+   "fieldname": "project_info_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "document_date",
+   "fieldtype": "Date",
+   "label": "Document Date"
+  },
+  {
+   "fieldname": "bid_closing_date",
+   "fieldtype": "Date",
+   "label": "Bid Closing Date"
+  },
+  {
+   "fieldname": "committed_delivery",
+   "fieldtype": "Data",
+   "label": "Committed Delivery (week)"
+  },
+  {
+   "fieldname": "payment_terms",
+   "fieldtype": "Data",
+   "label": "Payment Terms"
+  },
+  {
+   "fieldname": "scope_of_work_section",
+   "fieldtype": "Section Break",
+   "label": "Scope of Work"
+  },
+  {
+   "fieldname": "scope_of_work",
+   "fieldtype": "Text Editor",
+   "label": "Scope of Work"
+  },
+  {
+   "fieldname": "cost_and_profitability_section",
+   "fieldtype": "Section Break",
+   "label": "Cost and Profitability"
+  },
+  {
+   "fieldname": "project_cost",
+   "fieldtype": "Table",
+   "label": "Project Cost",
+   "options": "Bid Cost Line"
+  },
+  {
+   "fieldname": "total_project_cost",
+   "fieldtype": "Currency",
+   "label": "Total Project Cost",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bid_price_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "recommended_selling_price",
+   "fieldtype": "Currency",
+   "label": "Recommended Selling Price",
+   "options": "currency"
+  },
+  {
+   "fieldname": "minimum_negotiation_price",
+   "fieldtype": "Currency",
+   "label": "Minimum Negotiation Price",
+   "options": "currency"
+  },
+  {
+   "fieldname": "bid_price_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_profit",
+   "fieldtype": "Currency",
+   "label": "Expected Profit",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profit_margin",
+   "fieldtype": "Percent",
+   "label": "Profit Margin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "project_readiness_and_risk_section",
+   "fieldtype": "Section Break",
+   "label": "Project Readiness and Risk"
+  },
+  {
+   "fieldname": "engineering_technical",
+   "fieldtype": "Select",
+   "label": "Engineering / Technical",
+   "options": "\nApproved\nConditional"
+  },
+  {
+   "fieldname": "qaqc_itp_inspection",
+   "fieldtype": "Select",
+   "label": "QA/QC / ITP / Inspection",
+   "options": "\nApproved\nConditional"
+  },
+  {
+   "fieldname": "operations_capacity_delivery",
+   "fieldtype": "Select",
+   "label": "Operations / Capacity & Delivery",
+   "options": "\nApproved\nConditional"
+  },
+  {
+   "fieldname": "finance_cost_cash_flow",
+   "fieldtype": "Select",
+   "label": "Finance / Cost & Cash Flow",
+   "options": "\nApproved\nConditional"
+  },
+  {
+   "fieldname": "risk_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "overall_risk",
+   "fieldtype": "Select",
+   "label": "Overall Risk",
+   "options": "\nApproved\nConditional"
+  },
+  {
+   "fieldname": "key_conditions_risks",
+   "fieldtype": "Small Text",
+   "label": "Key Conditions / Risks"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Manufacturing Review') || doc.reviewed_by_design",
+   "depends_on": "eval:!doc.subcontracted_job",
+   "fieldname": "design_review_section",
+   "fieldtype": "Section Break",
+   "label": "Design and Engineering Department"
+  },
+  {
+   "fieldname": "reviewed_by_design",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "name_design",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "designation_design",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_design",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "design_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_design",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "default": "Pending Review",
+   "fieldname": "review_status_design",
+   "fieldtype": "Select",
+   "label": "Review Status",
+   "options": "\nPending Review\nApproved\nRevise\nMore Information"
+  },
+  {
+   "fieldname": "sign_design_attach",
+   "fieldtype": "Data",
+   "label": "Signature Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sign_design",
+   "fieldtype": "HTML",
+   "label": "Signature"
+  },
+  {
+   "depends_on": "eval: !doc.sign_design_attach && (doc.review_status_design == 'Approved' || doc.review_status_design == 'Revise')",
+   "fieldname": "manual_sign_design",
+   "fieldtype": "Signature",
+   "label": "Manual Signature"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Quality Review') || doc.reviewed_by_quality",
+   "depends_on": "eval:!doc.subcontracted_job",
+   "fieldname": "quality_review_section",
+   "fieldtype": "Section Break",
+   "label": "Quality Department"
+  },
+  {
+   "fieldname": "reviewed_by_quality",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "name_quality",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "designation_quality",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_quality",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "quality_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_quality",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "default": "Pending Review",
+   "fieldname": "review_status_quality",
+   "fieldtype": "Select",
+   "label": "Review Status",
+   "options": "\nPending Review\nApproved\nRevise\nMore Information"
+  },
+  {
+   "fieldname": "sign_quality_attach",
+   "fieldtype": "Data",
+   "label": "Signature Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sign_quality",
+   "fieldtype": "HTML",
+   "label": "Signature"
+  },
+  {
+   "depends_on": "eval: !doc.sign_quality_attach && (doc.review_status_quality == 'Approved' || doc.review_status_quality == 'Revise')",
+   "fieldname": "manual_sign_quality",
+   "fieldtype": "Signature",
+   "label": "Manual Signature"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Operation Review') || doc.reviewed_by_operations",
+   "fieldname": "operations_review_section",
+   "fieldtype": "Section Break",
+   "label": "Operations Department"
+  },
+  {
+   "fieldname": "reviewed_by_operations",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "name_operations",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "designation_operations",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_operations",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "operations_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_operations",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "default": "Pending Review",
+   "fieldname": "review_status_operations",
+   "fieldtype": "Select",
+   "label": "Review Status",
+   "options": "\nPending Review\nApproved\nRevise\nMore Information"
+  },
+  {
+   "fieldname": "sign_operations_attach",
+   "fieldtype": "Data",
+   "label": "Signature Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sign_operations",
+   "fieldtype": "HTML",
+   "label": "Signature"
+  },
+  {
+   "depends_on": "eval: !doc.sign_operations_attach && (doc.review_status_operations == 'Approved' || doc.review_status_operations == 'Revise')",
+   "fieldname": "manual_sign_operations",
+   "fieldtype": "Signature",
+   "label": "Manual Signature"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('Finance Review') || doc.reviewed_by_finance",
+   "fieldname": "finance_review_section",
+   "fieldtype": "Section Break",
+   "label": "Finance Department"
+  },
+  {
+   "fieldname": "reviewed_by_finance",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "name_finance",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "designation_finance",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_finance",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "finance_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_finance",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "default": "Pending Review",
+   "fieldname": "review_status_finance",
+   "fieldtype": "Select",
+   "label": "Review Status",
+   "options": "\nPending Review\nApproved\nRevise\nMore Information"
+  },
+  {
+   "fieldname": "sign_finance_attach",
+   "fieldtype": "Data",
+   "label": "Signature Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sign_finance",
+   "fieldtype": "HTML",
+   "label": "Signature"
+  },
+  {
+   "depends_on": "eval: !doc.sign_finance_attach && (doc.review_status_finance == 'Approved' || doc.review_status_finance == 'Revise')",
+   "fieldname": "manual_sign_finance",
+   "fieldtype": "Signature",
+   "label": "Manual Signature"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:frappe.user.has_role('CEO Approval') || doc.reviewed_by_ceo",
+   "fieldname": "ceo_review_section",
+   "fieldtype": "Section Break",
+   "label": "CEO Decision"
+  },
+  {
+   "fieldname": "reviewed_by_ceo",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User"
+  },
+  {
+   "fieldname": "name_ceo",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "designation_ceo",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks_ceo",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "ceo_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_ceo",
+   "fieldtype": "Date",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_status_ceo",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "\nApproved\nApproved with Conditions\nRevise & Resubmit\nNo Bid"
+  },
+  {
+   "fieldname": "sign_ceo_attach",
+   "fieldtype": "Data",
+   "label": "Signature Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sign_ceo",
+   "fieldtype": "HTML",
+   "label": "Signature"
+  },
+  {
+   "depends_on": "eval: !doc.sign_ceo_attach && (['Approved', 'Approved with Conditions', 'Revise & Resubmit', 'No Bid'].includes(doc.review_status_ceo))",
+   "fieldname": "manual_sign_ceo",
+   "fieldtype": "Signature",
+   "label": "Manual Signature"
+  },
+  {
+   "default": "BA-.YY.-.####.",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "BA-.YY.-.####."
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Bid Approval",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-08-24 14:51:39.976608",
+ "modified_by": "Administrator",
+ "module": "Itag Ksa Selling",
+ "name": "Bid Approval",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Manufacturing Review",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Quality Review",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Operation Review",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Finance Review",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "CEO Approval",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
